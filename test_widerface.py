@@ -126,7 +126,7 @@ if __name__ == '__main__':
     parser.add_argument('--name', default='exp', help='save results to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--save_folder', default='./widerface_evaluate/widerface_txt/', type=str, help='Dir to save txt results')
-    parser.add_argument('--dataset_folder', default='../WiderFace/val/images/', type=str, help='dataset path')
+    parser.add_argument('--dataset_folder', default='/ssd_1t/derron/WiderFace/val/images/', type=str, help='dataset path')
     opt = parser.parse_args()
     print(opt)
 

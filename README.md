@@ -1,8 +1,8 @@
 ## yolov5-face
 
-使用yolov5增加landmark预测分支，loss使用wingloss,使用v5s以及v5m相对于retinaface-r50都小很多的backbone,取得了更好的性能。
+在yolov5的基础上增加landmark预测分支，loss使用wingloss,使用yolov5s取得了相对于retinaface-r50更好的性能。
 
-#### shiyoshiyWiderFace测试
+#### WiderFace测试
 
 * 在wider face val精度（单尺度最大边输入分辨率：**1024**）
 

@@ -4,15 +4,18 @@
 
 #### WiderFace测试
 
-* 在wider face val精度（单尺度最大边输入分辨率：**1024**）
+* 在wider face val精度（单尺度最大边输入分辨率：**640**）
 
-| Backbone                             | Easy  | Medium | Hard  | Flops(640*640) | Params |
-| ------------------------------------ | ----- | ------ | ----- | -------------- | ------ |
-| yolov5s                              | 95.4% | 94.6%  | 88.2% | 8.2G           | 7.1M   |
-| yolov5m                              | 95.8% | 95.1%  | 90.5% | 25.3G          | 21.2M  |
-| yolov5s6                             | 95.5% | 94.5%  | 90.1% | 8.4G           | 12.4M  |
-| RetinaFace-R50(original image scale) | 95.5% | 94.0%  | 84.4% | 44.5G          | 27.3M  |
-| mobilenetv3s                         |       |        |       | 3.02G          | 3.57M  |
+| Method              | Backbone  | Easy  | Medium | Hard  | \#Params(M) | \#Flops(G) |
+  | ------------------- | --------- | ----- | ------ | ----- | ----------- | ---------- |
+  | DSFD (CVPR19)       | ResNet152 | 94.29 | 91.47  | 71.39 | 120.06      | 259.55     |
+  | RetinaFace (CVPR20) | ResNet50  | 94.92 | 91.90  | 64.17 | 29.50       | 37.59      |
+  | HAMBox (CVPR20)     | ResNet50  | 95.27 | 93.76  | 76.75 | 30.24       | 43.28      |
+  | TinaFace (Arxiv20)  | ResNet50  | 95.61 | 94.25  | 81.43 | 37.98       | 172.95     |
+  | -                   | -         | -     | -      | -     | -           | -          |
+  | yolov5s6            |           | 95.48 | 93.66  | 82.8  | 12.402      | 8.414      |
+  | yolov5m6            |           | 95.66 | 94.1   | 85.2  | 35.519      | 25.788     |
+  | yolov5m6+           |           | 96.06 | 94.4   | 85.4  | 63.077      | 45.520     |
 
 #### 模型测试下载地址
 
@@ -34,3 +37,5 @@ https://github.com/DayBreak-u/yolo-face-with-landmark
 https://github.com/xialuxi/yolov5_face_landmark
 
 https://github.com/biubug6/Pytorch_Retinaface
+
+https://github.com/deepinsight/insightface

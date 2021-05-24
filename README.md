@@ -97,3 +97,5 @@ https://github.com/DayBreak-u/yolo-face-with-landmark
 https://github.com/xialuxi/yolov5_face_landmark
 
 https://github.com/biubug6/Pytorch_Retinaface
+
+https://github.com/deepinsight/insightface

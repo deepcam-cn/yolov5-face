@@ -167,7 +167,8 @@ def compute_loss(p, targets, model):  # predictions, targets, model
             #     [file.write('%11.5g ' * 4 % tuple(x) + '\n') for x in torch.cat((txy[i], twh[i]), 1)]
 
             #landmarks loss
-            plandmarks = ps[:,5:15].sigmoid() * 8. - 4.
+            #plandmarks = ps[:,5:15].sigmoid() * 8. - 4.
+            plandmarks = ps[:,5:15]
 
             plandmarks[:, 0:2] = plandmarks[:, 0:2] * anchors[i]
             plandmarks[:, 2:4] = plandmarks[:, 2:4] * anchors[i]

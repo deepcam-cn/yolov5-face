@@ -339,6 +339,43 @@ def wh_iou(wh1, wh2):
     # iou = inter / (area1 + area2 - inter)
     return inter / (wh1.prod(2) + wh2.prod(2) - inter)
 
+def jaccard_diou(box_a, box_b, iscrowd:bool=False):
+    use_batch = True
+    if box_a.dim() == 2:
+        use_batch = False
+        box_a = box_a[None, ...]
+        box_b = box_b[None, ...]
+
+    inter = intersect(box_a, box_b)
+    area_a = ((box_a[:, :, 2]-box_a[:, :, 0]) *
+              (box_a[:, :, 3]-box_a[:, :, 1])).unsqueeze(2).expand_as(inter)  # [A,B]
+    area_b = ((box_b[:, :, 2]-box_b[:, :, 0]) *
+              (box_b[:, :, 3]-box_b[:, :, 1])).unsqueeze(1).expand_as(inter)  # [A,B]
+    union = area_a + area_b - inter
+    x1 = ((box_a[:, :, 2]+box_a[:, :, 0]) / 2).unsqueeze(2).expand_as(inter)
+    y1 = ((box_a[:, :, 3]+box_a[:, :, 1]) / 2).unsqueeze(2).expand_as(inter)
+    x2 = ((box_b[:, :, 2]+box_b[:, :, 0]) / 2).unsqueeze(1).expand_as(inter)
+    y2 = ((box_b[:, :, 3]+box_b[:, :, 1]) / 2).unsqueeze(1).expand_as(inter)
+
+    t1 = box_a[:, :, 1].unsqueeze(2).expand_as(inter)
+    b1 = box_a[:, :, 3].unsqueeze(2).expand_as(inter)
+    l1 = box_a[:, :, 0].unsqueeze(2).expand_as(inter)
+    r1 = box_a[:, :, 2].unsqueeze(2).expand_as(inter)
+
+    t2 = box_b[:, :, 1].unsqueeze(1).expand_as(inter)
+    b2 = box_b[:, :, 3].unsqueeze(1).expand_as(inter)
+    l2 = box_b[:, :, 0].unsqueeze(1).expand_as(inter)
+    r2 = box_b[:, :, 2].unsqueeze(1).expand_as(inter)
+
+    cr = torch.max(r1, r2)
+    cl = torch.min(l1, l2)
+    ct = torch.min(t1, t2)
+    cb = torch.max(b1, b2)
+    D = (((x2 - x1)**2 + (y2 - y1)**2) / ((cr-cl)**2 + (cb-ct)**2 + 1e-7))
+    out = inter / area_a if iscrowd else inter / (union + 1e-7) - D ** 0.7
+    return out if use_batch else out.squeeze(0)
+
+
 def non_max_suppression_face(prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False, labels=()):
     """Performs Non-Maximum Suppression (NMS) on inference results
     Returns:

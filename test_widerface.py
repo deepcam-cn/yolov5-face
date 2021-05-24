@@ -16,7 +16,7 @@ from utils.plots import plot_one_box
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 from tqdm import tqdm
 
-def dynamic_resize(shape, stride=32):
+def dynamic_resize(shape, stride=64):
     max_size = max(shape[0], shape[1])
     if max_size % stride != 0:
         max_size = (int(max_size / stride) + 1) * stride 
@@ -73,7 +73,7 @@ def detect(model, img0):
     imgsz = opt.img_size
     if imgsz <= 0:                    # original size    
         imgsz = dynamic_resize(img0.shape)
-    imgsz = check_img_size(imgsz, s=stride)  # check img_size
+    imgsz = check_img_size(imgsz, s=64)  # check img_size
     img = letterbox(img0, imgsz)[0]
     # Convert
     img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
@@ -106,15 +106,13 @@ def detect(model, img0):
             x2 = int(xywh[0] * w + 0.5 * xywh[2] * w)
             y2 = int(xywh[1] * h + 0.5 * xywh[3] * h)
             boxes.append([x1, y1, x2-x1, y2-y1, conf])
-            #img0 = show_results(img0, xywh, conf, landmarks, class_num)
-    #cv2.imwrite('test.jpg', img0)
     return boxes
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default='runs/train/exp5/weights/last.pt', help='model.pt path(s)')
-    parser.add_argument('--img-size', type=int, default=1024, help='inference size (pixels)')
+    parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.01, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.4, help='IOU threshold for NMS')
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
@@ -126,7 +124,7 @@ if __name__ == '__main__':
     parser.add_argument('--name', default='exp', help='save results to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--save_folder', default='./widerface_evaluate/widerface_txt/', type=str, help='Dir to save txt results')
-    parser.add_argument('--dataset_folder', default='/ssd_1t/derron/WiderFace/val/images/', type=str, help='dataset path')
+    parser.add_argument('--dataset_folder', default='../WiderFace/val/images/', type=str, help='dataset path')
     opt = parser.parse_args()
     print(opt)
 

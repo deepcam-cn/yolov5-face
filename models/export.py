@@ -32,6 +32,7 @@ if __name__ == '__main__':
 
     # Load PyTorch model
     model = attempt_load(opt.weights, map_location=torch.device('cpu'))  # load FP32 model
+    model.eval()
     labels = model.names
 
     # Checks
@@ -57,7 +58,8 @@ if __name__ == '__main__':
     # ONNX export
     print('\nStarting ONNX export with onnx %s...' % onnx.__version__)
     f = opt.weights.replace('.pt', '.onnx')  # filename
-    torch.onnx.export(model, img, f, verbose=False, opset_version=9, input_names=['data'],
+    model.fuse()  # only for ONNX
+    torch.onnx.export(model, img, f, verbose=False, opset_version=12, input_names=['data'],
                       output_names=['stride_' + str(int(x)) for x in model.stride])
 
     # Checks

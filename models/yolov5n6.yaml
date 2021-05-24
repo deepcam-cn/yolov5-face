@@ -1,0 +1,58 @@
+# parameters
+nc: 1  # number of classes
+depth_multiple: 1.0  # model depth multiple
+width_multiple: 1.0  # layer channel multiple
+
+# anchors
+anchors:
+  - [6,7,  9,11,  13,16]  # P3/8
+  - [18,23,  26,33,  37,47]  # P4/16
+  - [54,67,  77,104,  112,154]  # P5/32
+  - [174,238,  258,355,  445,568]  # P6/64
+
+# YOLOv5 backbone
+backbone:
+  # [from, number, module, args]
+  [[-1, 1, StemBlock, [32, 3, 2]],    # 0-P2/4
+   [-1, 1, ShuffleV2Block, [128, 2]], # 1-P3/8
+   [-1, 3, ShuffleV2Block, [128, 1]], # 2
+   [-1, 1, ShuffleV2Block, [256, 2]], # 3-P4/16
+   [-1, 7, ShuffleV2Block, [256, 1]], # 4
+   [-1, 1, ShuffleV2Block, [384, 2]], # 5-P5/32
+   [-1, 3, ShuffleV2Block, [384, 1]], # 6
+   [-1, 1, ShuffleV2Block, [512, 2]], # 7-P6/64
+   [-1, 3, ShuffleV2Block, [512, 1]], # 8
+  ]
+
+# YOLOv5 head
+head:
+  [[-1, 1, Conv, [128, 1, 1]],
+   [-1, 1, nn.Upsample, [None, 2, 'nearest']],
+   [[-1, 6], 1, Concat, [1]],  # cat backbone P5
+   [-1, 1, C3, [128, False]],  # 12
+
+   [-1, 1, Conv, [128, 1, 1]],
+   [-1, 1, nn.Upsample, [None, 2, 'nearest']],
+   [[-1, 4], 1, Concat, [1]],  # cat backbone P4
+   [-1, 1, C3, [128, False]],  # 16 (P4/8-small)
+
+   [-1, 1, Conv, [128, 1, 1]],
+   [-1, 1, nn.Upsample, [None, 2, 'nearest']],
+   [[-1, 2], 1, Concat, [1]],  # cat backbone P3
+   [-1, 1, C3, [128, False]],  # 20 (P3/8-small)
+
+   [-1, 1, Conv, [128, 3, 2]],
+   [[-1, 17], 1, Concat, [1]],  # cat head P4
+   [-1, 1, C3, [128, False]],  # 23 (P4/16-medium)
+
+   [-1, 1, Conv, [128, 3, 2]],
+   [[-1, 13], 1, Concat, [1]],  # cat head P5
+   [-1, 1, C3, [128, False]],  # 26 (P5/32-large)
+
+   [-1, 1, Conv, [128, 3, 2]],
+   [[-1, 9], 1, Concat, [1]],  # cat head P6
+   [-1, 1, C3, [128, False]],  # 29 (P6/64-large)
+
+   [[20, 23, 26, 29], 1, Detect, [nc, anchors]],  # Detect(P3, P4, P5)
+  ]
+          

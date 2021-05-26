@@ -341,7 +341,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                                                  single_cls=opt.single_cls,
                                                  dataloader=testloader,
                                                  save_dir=save_dir,
-                                                 plots=plots and final_epoch,
+                                                 plots=False,
                                                  log_imgs=opt.log_imgs if wandb else 0)
 
             # Write

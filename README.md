@@ -84,8 +84,12 @@ python3 evaluation.py
 
 #### Test
 
-![](data/images/result.jpeg)
+![](data/images/result.jpg)
 
+
+#### Android demo
+
+https://github.com/FeiGeChuanShu/ncnn_Android_face/tree/main/ncnn-android-yolov5_face
 
 
 #### References

@@ -101,3 +101,15 @@ https://github.com/xialuxi/yolov5_face_landmark
 https://github.com/biubug6/Pytorch_Retinaface
 
 https://github.com/deepinsight/insightface
+
+
+#### Citation 
+- If you think this work is useful for you, please cite 
+ 
+      @inarticle{YOLO5Face,
+      title = {YOLO5Face: Why Reinventing a Face Detector},
+      author = {Qi, Delong and Tan, Weijun, and Yao, Qi. and Liu, Jingfeng},
+      booktitle = {ArXiv preprint 2105.12931},
+      year = {2021}
+      }
+

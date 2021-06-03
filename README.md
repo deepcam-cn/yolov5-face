@@ -54,7 +54,7 @@ Single Scale Inference on VGA resolution（max side is equal to 640 and scale).
 ## Data preparation
 
 1. Download WIDERFace datasets.
-2. Download annotation files from [onedrive](https://1drv.ms/u/s!AswpsDO2toNKrU5PF53RsjTWACnc?e=jbQHnr).
+2. Download annotation files from [google cloud](https://drive.google.com/file/d/1tU_IjyOwGQfGNUvZGwWWM4SwxKp2PUQ8/view?usp=sharing).
 
 ```shell
 python3 train2yolo.py

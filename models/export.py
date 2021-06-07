@@ -52,6 +52,13 @@ if __name__ == '__main__':
                 m.act = SiLU()
         # elif isinstance(m, models.yolo.Detect):
         #     m.forward = m.forward_export  # assign forward (optional)
+        if isinstance(m, models.common.ShuffleV2Block):#shufflenet block nn.SiLU
+            for i in range(len(m.branch1)):
+                if isinstance(m.branch1[i], nn.SiLU):
+                    m.branch1[i] = SiLU()
+            for i in range(len(m.branch2)):
+                if isinstance(m.branch2[i], nn.SiLU):
+                    m.branch2[i] = SiLU()
     model.model[-1].export = True  # set Detect() layer export=True
     y = model(img)  # dry run
 

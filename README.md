@@ -89,6 +89,10 @@ python3 evaluation.py
 
 https://github.com/FeiGeChuanShu/ncnn_Android_face/tree/main/ncnn-android-yolov5_face
 
+#### opencv dnn demo
+
+https://github.com/hpc203/yolov5-dnn-cpp-python-v2
+
 
 #### References
 

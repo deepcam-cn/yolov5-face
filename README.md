@@ -1,6 +1,10 @@
 ## What's New
 
 **2021.08**: Add new training dataset [Multi-Task-Facial](https://drive.google.com/file/d/1Pwd6ga06cDjeOX20RSC1KWiT888Q9IpM/view?usp=sharing),improve large face detection.
+| Method               | Easy  | Medium | Hard  | 
+| -------------------- | ----- | ------ | ----- |
+| ***YOLOv5s***        | 94.56 | 92.92  | 83.84 |
+| ***YOLOv5m***        | 95.46 | 93.87  | 85.54 |
 
 
 ## Introduction

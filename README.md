@@ -1,6 +1,6 @@
 ## What's New
 
-**2021.08: add new train dataset [Multi-Task-Facial](https://drive.google.com/file/d/1Pwd6ga06cDjeOX20RSC1KWiT888Q9IpM/view?usp=sharing)
+**2021.08**: add new train dataset [Multi-Task-Facial](https://drive.google.com/file/d/1Pwd6ga06cDjeOX20RSC1KWiT888Q9IpM/view?usp=sharing)
 
 
 ## Introduction

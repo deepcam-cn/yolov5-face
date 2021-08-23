@@ -2,7 +2,7 @@
 
 **2021.08**: Yolov5-face to TensorRT.
 
-Inference time.
+Yolov5n-0.5 inference time.
 |Model |Time |
 |:---:|:----:|
 |Pytorch|11ms|

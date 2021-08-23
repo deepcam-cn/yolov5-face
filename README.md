@@ -1,6 +1,7 @@
 ## What's New
 
-**2021.08**: Yolov5-face to TensorRT
+**2021.08**: Yolov5-face to TensorRT.
+
 Inference time.
 |Model |Time |
 |:---:|:----:|

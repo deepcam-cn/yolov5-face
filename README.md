@@ -1,9 +1,7 @@
 ## What's New
 
-**2021.08**: TensorRT
-
-
-Inference time
+**2021.08**: Yolov5-face to TensorRT
+Inference time.
 |Model |Time |
 |:---:|:----:|
 |Pytorch|11ms|

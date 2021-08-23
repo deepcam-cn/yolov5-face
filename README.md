@@ -1,5 +1,15 @@
 ## What's New
 
+**2021.08**: TensorRT
+
+
+Inference time
+|Model |Time |
+|:---:|:----:|
+|Pytorch|11ms|
+|TensorRT|5ms|
+
+
 **2021.08**: Add new training dataset [Multi-Task-Facial](https://drive.google.com/file/d/1Pwd6ga06cDjeOX20RSC1KWiT888Q9IpM/view?usp=sharing),improve large face detection.
 | Method               | Easy  | Medium | Hard  | 
 | -------------------- | ----- | ------ | ----- |

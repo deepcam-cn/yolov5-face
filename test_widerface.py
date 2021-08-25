@@ -1,4 +1,5 @@
 import argparse
+import glob
 import time
 from pathlib import Path
 
@@ -125,8 +126,17 @@ if __name__ == '__main__':
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--save_folder', default='./widerface_evaluate/widerface_txt/', type=str, help='Dir to save txt results')
     parser.add_argument('--dataset_folder', default='../WiderFace/val/images/', type=str, help='dataset path')
+    parser.add_argument('--folder_pict', default='/yolov5-face/data/widerface/val/wider_val.txt', type=str, help='folder_pict')
     opt = parser.parse_args()
     print(opt)
+
+    # changhy : read folder_pict
+    pict_folder = {}
+    with open(opt.folder_pict, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.strip().split('/')
+            pict_folder[line[-1]] = line[-2]
 
     # Load model
     device = select_device(opt.device)
@@ -134,17 +144,19 @@ if __name__ == '__main__':
     with torch.no_grad():
         # testing dataset
         testset_folder = opt.dataset_folder
-        testset_list = opt.dataset_folder[:-7] + "wider_val.txt"
 
-        with open(testset_list, 'r') as fr:
-            test_dataset = fr.read().split()
-            num_images = len(test_dataset)
-        for img_name in tqdm(test_dataset):
-            image_path = testset_folder + img_name
-            img0 = cv2.imread(image_path)  # BGR 
+        for image_path in tqdm(glob.glob(testset_folder + '/*')):
+            if image_path.endswith('.txt'):
+                continue
+            img0 = cv2.imread(image_path)  # BGR
+            if img0 is None:
+                print(f'ignore : {image_path}')
+                continue
             boxes = detect(model, img0)
             # --------------------------------------------------------------------
-            save_name = opt.save_folder + img_name[:-4] + ".txt"
+            image_name = os.path.basename(image_path)
+            txt_name = os.path.splitext(image_name)[0] + ".txt"
+            save_name = os.path.join(opt.save_folder, pict_folder[image_name], txt_name)
             dirname = os.path.dirname(save_name)
             if not os.path.isdir(dirname):
                 os.makedirs(dirname)
@@ -155,4 +167,4 @@ if __name__ == '__main__':
                 fd.write(bboxs_num)
                 for box in boxes:
                     fd.write('%d %d %d %d %.03f' % (box[0], box[1], box[2], box[3], box[4] if box[4] <= 1 else 1) + '\n')
-   
+        print('done.')

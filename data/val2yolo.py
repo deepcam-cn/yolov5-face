@@ -33,7 +33,7 @@ def wider2face(phase='val', ignore_small=0):
 		for line in tqdm(lines):
 			line = line.strip()
 			if '#' in line:
-				path = '{}/{}/images/{}'.format(root, phase, line.split()[-1])
+				path = '{}/{}/images/{}'.format(root, phase, os.path.basename(line))
 				img = cv2.imread(path)
 				height, width, _ = img.shape
 				data[path] = list()
@@ -49,10 +49,9 @@ def wider2face(phase='val', ignore_small=0):
 if __name__ == '__main__':
 	datas = wider2face('val')
 	for idx, data in enumerate(datas.keys()):
-		tmp = data.split('/')[-1]
-		end = tmp.split('.')[-1]
-		out_img = 'widerface/val/{}.jpg'.format(idx)
-		out_txt = 'widerface/val/{}.txt'.format(idx)
+		pict_name = os.path.basename(data)
+		out_img = 'widerface/val/images/{}'.format(pict_name)
+		out_txt = 'widerface/val/labels/{}.txt'.format(os.path.splitext(pict_name)[0])
 		shutil.copyfile(data, out_img)
 		labels = datas[data]
 		f = open(out_txt, 'w')

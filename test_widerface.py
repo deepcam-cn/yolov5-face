@@ -145,7 +145,7 @@ if __name__ == '__main__':
         # testing dataset
         testset_folder = opt.dataset_folder
 
-        for image_path in tqdm(glob.glob(testset_folder + '/*')):
+        for image_path in tqdm(glob.glob(os.path.join(testset_folder, '*'))):
             if image_path.endswith('.txt'):
                 continue
             img0 = cv2.imread(image_path)  # BGR

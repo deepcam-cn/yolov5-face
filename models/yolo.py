@@ -63,7 +63,8 @@ class Detect(nn.Module):
                     self.grid[i] = self._make_grid(nx, ny).to(x[i].device)
 
                 y = torch.full_like(x[i], 0)
-                y[..., [0,1,2,3,4,15]] = x[i][..., [0,1,2,3,4,15]].sigmoid()
+                class_range = list(range(5)) + list(range(15,15+self.nc))
+                y[..., class_range] = x[i][..., class_range].sigmoid()
                 y[..., 5:15] = x[i][..., 5:15]
                 #y = x[i].sigmoid()
 

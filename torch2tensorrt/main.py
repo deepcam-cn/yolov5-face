@@ -79,7 +79,7 @@ if __name__ == '__main__':
     # ============参数================
     img_path=cur_path+"/sample.jpg" #测试图片路径
     device="cuda:0" 
-    onnx_model_path=cur_path+"/yolov5n-0.5.onnx" #ONNX模型路径
+    onnx_model_path=cur_path+"/../../yolov5l-face.onnx" #ONNX模型路径
     fp16_mode=True  #True则FP16推理
 
     # ============图像预处理================
@@ -89,8 +89,10 @@ if __name__ == '__main__':
     # 初始化TensorRT引擎
     yolo_trt_model=YoloTrtModel(device,onnx_model_path,fp16_mode)
 
-    pred=yolo_trt_model(img.cpu().numpy()) #tensorrt网络推理
+    # 耗时统计 = tensorrt推理 + torch后处理
+    pred=yolo_trt_model(img.cpu().numpy()) #tensorrt推理
     pred=yolo_trt_model.after_process(pred,device) # torch后处理
+
     # Apply NMS
     pred = non_max_suppression_face(pred, conf_thres=0.3, iou_thres=0.5)
    

@@ -2,11 +2,15 @@
 
 **2021.08**: Yolov5-face to TensorRT.
 
-Yolov5n-0.5 inference time.
-|Model |Time |
-|:---:|:----:|
-|Pytorch|11ms|
-|TensorRT|5ms|
+Inference time.
+| |Pytorch |TensorRT_FP16 |
+|:---:|:----:|:----:|
+|yolov5n-0.5|11.9ms|2.9ms|
+|yolov5n-face|20.7ms|2.5ms|
+|yolov5s-face|25.2ms|3.0ms|
+|yolov5m-face|61.2ms|3.0ms|
+|yolov5l-face|109.6ms|3.6ms|
+> Note: (1) Model inference  (2) Resolution 640x640
 
 
 **2021.08**: Add new training dataset [Multi-Task-Facial](https://drive.google.com/file/d/1Pwd6ga06cDjeOX20RSC1KWiT888Q9IpM/view?usp=sharing),improve large face detection.

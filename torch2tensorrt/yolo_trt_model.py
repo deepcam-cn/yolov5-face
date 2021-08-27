@@ -16,7 +16,7 @@ class YoloTrtModel():
     '''
     ONNX->TensorRT并推理
     '''
-    def __init__(self,device_id="cuda:0",onnx_model_path=None,fp16_mode=False,output_size=(1,-1)):
+    def __init__(self,device_id="cuda:0",onnx_model_path=None,fp16_mode=False):
         '''
         device_id: "cuda:0"
         onnx_model_path: 加载onnx模型的路径
@@ -25,26 +25,31 @@ class YoloTrtModel():
         '''
         trt_engine_path = onnx_model_path.replace('.onnx','.trt')
 
-        # ONNX->TensorRT
-        # ONNX_to_TensorRT(fp16_mode=fp16_mode,onnx_model_path=onnx_model_path,trt_engine_path=trt_engine_path)
+        # ONNX->TensorRT,生成trt引擎文件
+        ONNX_to_TensorRT(fp16_mode=fp16_mode,onnx_model_path=onnx_model_path,trt_engine_path=trt_engine_path)
         # 初始化TensorRT
-        self.model_params=Init_TensorRT(trt_engine_path,output_size)
+        self.model_params=Init_TensorRT(trt_engine_path)
+
+        # 输出特征
+        self.stride8_shape=(1,3,80,80,16)
+        self.stride16_shape=(1,3,40,40,16)
+        self.stride32_shape=(1,3,20,20,16)
 
     def __call__(self,img_np_nchw):
         '''
         TensorRT推理
         img_np_nchw: 输入图像 [1,3,640,640]
         '''
-        context,inputs, outputs, bindings, stream, shape_of_output = self.model_params
+        context,inputs, outputs, bindings, stream = self.model_params
         
         # 加载输入数据到buffer
         inputs[0].host = img_np_nchw.reshape(-1) #输入形状转为一维，作为输入
         # inputs[1].host = ... for multiple input  对于多输入情况
 
         trt_outputs = Do_Inference(context, bindings=bindings, inputs=inputs, outputs=outputs, stream=stream)  # numpy data
-        stride_8 = trt_outputs[0].reshape(*shape_of_output) # 输出形状由一维转为指定形状
-        stride_16 = trt_outputs[1].reshape(*shape_of_output) # 输出形状由一维转为指定形状
-        stride_32 = trt_outputs[2].reshape(*shape_of_output) # 输出形状由一维转为指定形状
+        stride_8 = trt_outputs[0].reshape(*self.stride8_shape) # 输出形状由一维转为指定形状
+        stride_16 = trt_outputs[1].reshape(*self.stride16_shape) # 输出形状由一维转为指定形状
+        stride_32 = trt_outputs[2].reshape(*self.stride32_shape) # 输出形状由一维转为指定形状
         return [stride_8,stride_16,stride_32]
     def after_process(self,pred,device):
         '''
@@ -53,34 +58,18 @@ class YoloTrtModel():
         device: "cuda:0"
         '''
 
-        # 输入尺寸640  降8、16、32倍，对应输出尺寸为80、40、20
+        # 降8、16、32倍
         stride= torch.tensor([8.,16.,32.]).to(device)
-        stride8_shape=(1,3,80,80,16)
-        stride16_shape=(1,3,40,40,16)
-        stride32_shape=(1,3,20,20,16)
 
-        x=[torch.from_numpy(pred[0]).to(device).view(stride8_shape),torch.from_numpy(pred[1]).to(device).view(stride16_shape),torch.from_numpy(pred[2]).to(device).view(stride32_shape)]
+        x=[torch.from_numpy(pred[0]).to(device),torch.from_numpy(pred[1]).to(device),torch.from_numpy(pred[2]).to(device)]
         # 提取自models/yolo.py
         # ============yolov5-0.5参数 start============
-        nc=1
-        no=16
-
+      
+        no=16 # 4坐标+1置信度+10关键点坐标+1类别
         nl=3
-        na=3
+     
         grid=[torch.zeros(1).to(device)] * nl 
-    
-        anchors=torch.tensor([[[ 0.50000,  0.62500],
-            [ 1.00000,  1.25000],
-            [ 1.62500,  2.00000]],
 
-            [[ 1.43750,  1.81250],
-            [ 2.68750,  3.43750],
-            [ 4.56250,  6.56250]],
-
-            [[ 4.56250,  6.78125],
-            [ 7.21875,  9.37500],
-            [10.46875, 13.53125]]]).to(device)
-        
         anchor_grid=torch.tensor([[[[[[  4.,   5.]]],
             [[[  8.,  10.]]],
             [[[ 13.,  16.]]]]],
@@ -90,7 +79,7 @@ class YoloTrtModel():
             [[[[[146., 217.]]],
             [[[231., 300.]]],
             [[[335., 433.]]]]]]).to(device)
-        # ============yolov5-0.5参数 end============
+       
         
         z = [] 
         for i in range(len(x)):

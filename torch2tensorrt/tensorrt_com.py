@@ -10,7 +10,7 @@ import os
 import sys
 current_path=os.path.abspath(os.path.dirname(__file__))
 
-def Init_TensorRT(trt_path,shape_of_output):
+def Init_TensorRT(trt_path):
     '''
     初始化TensorRT引擎
     :param trt_path: trt文件
@@ -21,7 +21,7 @@ def Init_TensorRT(trt_path,shape_of_output):
     # 创建CudaEngine之后,需要将该引擎应用到不同的卡上配置执行环境
     context = engine.create_execution_context()
     inputs, outputs, bindings, stream = allocate_buffers(engine)  # input, output: host # bindings
-    return [context,inputs, outputs, bindings, stream,shape_of_output]
+    return [context,inputs, outputs, bindings, stream]
 def load_engine(trt_path):
     """
     加载cuda引擎

@@ -1,9 +1,8 @@
 ## What's New
 
-**2021.08**: Yolov5-face to TensorRT.
-
+**2021.08**: Yolov5-face to TensorRT.  
 Inference time.
-| |Pytorch |TensorRT_FP16 |
+|Backbone|Pytorch |TensorRT_FP16 |
 |:---:|:----:|:----:|
 |yolov5n-0.5|11.9ms|2.9ms|
 |yolov5n-face|20.7ms|2.5ms|

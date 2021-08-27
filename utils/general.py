@@ -387,6 +387,8 @@ def non_max_suppression_face(prediction, conf_thres=0.25, iou_thres=0.45, classe
 
     # Settings
     min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
+    max_det = 300  # maximum number of detections per image
+    max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
     time_limit = 10.0  # seconds to quit after
     redundant = True  # require redundant detections
     multi_label = nc > 1  # multiple labels per box (adds 0.5ms/img)
@@ -420,8 +422,10 @@ def non_max_suppression_face(prediction, conf_thres=0.25, iou_thres=0.45, classe
 
         # Detections matrix nx6 (xyxy, conf, landmarks, cls)
         if multi_label:
-            i, j = (x[:, 15:] > conf_thres).nonzero(as_tuple=False).T
-            x = torch.cat((box[i], x[i, j + 15, None], x[:, 5:15] ,j[:, None].float()), 1)
+            #i, j = (x[:, 15:] > conf_thres).nonzero(as_tuple=False).T
+            #x = torch.cat((box[i], x[i, j + 15, None], x[i, 5:15] ,j[:, None].float()), 1)
+            conf, j = x[:, 15:].max(1, keepdim=True)
+            x = torch.cat((box, conf, x[:, 5:15], j.float()), 1)[conf.view(-1) > conf_thres]
         else:  # best class only
             conf, j = x[:, 15:].max(1, keepdim=True)
             x = torch.cat((box, conf, x[:, 5:15], j.float()), 1)[conf.view(-1) > conf_thres]
@@ -431,16 +435,22 @@ def non_max_suppression_face(prediction, conf_thres=0.25, iou_thres=0.45, classe
             x = x[(x[:, 5:6] == torch.tensor(classes, device=x.device)).any(1)]
 
         # If none remain process next image
+        if not torch.isfinite(x).all():
+            x = x[torch.isfinite(x).all(1)]
+
+        # Check shape
         n = x.shape[0]  # number of boxes
-        if not n:
+        if not n:  # no boxes
             continue
+        elif n > max_nms:  # excess boxes
+            x = x[x[:, 4].argsort(descending=True)[:max_nms]]  # sort by confidence
 
         # Batched NMS
         c = x[:, 15:16] * (0 if agnostic else max_wh)  # classes
         boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
         i = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
-        #if i.shape[0] > max_det:  # limit detections
-        #    i = i[:max_det]
+        if i.shape[0] > max_det:  # limit detections
+            i = i[:max_det]
         if merge and (1 < n < 3E3):  # Merge NMS (boxes merged using weighted mean)
             # update boxes as boxes(i,4) = weights(i,n) * boxes(n,4)
             iou = box_iou(boxes[i], boxes) > iou_thres  # iou matrix
@@ -451,6 +461,7 @@ def non_max_suppression_face(prediction, conf_thres=0.25, iou_thres=0.45, classe
 
         output[xi] = x[i]
         if (time.time() - t) > time_limit:
+            print(f'WARNING: NMS time limit {time_limit}s exceeded')
             break  # time limit exceeded
 
     return output
@@ -469,8 +480,8 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
     # Settings
     # (pixels) minimum and maximum box width and height
     min_wh, max_wh = 2, 4096
-    #max_det = 300  # maximum number of detections per image
-    #max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
+    max_det = 300  # maximum number of detections per image
+    max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
     time_limit = 10.0  # seconds to quit after
     redundant = True  # require redundant detections
     multi_label = nc > 1  # multiple labels per box (adds 0.5ms/img)
@@ -523,16 +534,16 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
         n = x.shape[0]  # number of boxes
         if not n:  # no boxes
             continue
-        #elif n > max_nms:  # excess boxes
-        #    x = x[x[:, 4].argsort(descending=True)[:max_nms]]  # sort by confidence
-        x = x[x[:, 4].argsort(descending=True)]  # sort by confidence
+        elif n > max_nms:  # excess boxes
+            x = x[x[:, 4].argsort(descending=True)[:max_nms]]  # sort by confidence
+        #x = x[x[:, 4].argsort(descending=True)]  # sort by confidence
 
         # Batched NMS
         c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
         boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
         i = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
-        #if i.shape[0] > max_det:  # limit detections
-        #    i = i[:max_det]
+        if i.shape[0] > max_det:  # limit detections
+            i = i[:max_det]
         if merge and (1 < n < 3E3):  # Merge NMS (boxes merged using weighted mean)
             # update boxes as boxes(i,4) = weights(i,n) * boxes(n,4)
             iou = box_iou(boxes[i], boxes) > iou_thres  # iou matrix

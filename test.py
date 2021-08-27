@@ -12,7 +12,7 @@ from tqdm import tqdm
 from models.experimental import attempt_load
 from utils.datasets import create_dataloader
 from utils.general import coco80_to_coco91_class, check_dataset, check_file, check_img_size, box_iou, \
-    non_max_suppression, scale_coords, xyxy2xywh, xywh2xyxy, set_logging, increment_path
+    non_max_suppression, scale_coords, xyxy2xywh, xywh2xyxy, set_logging, increment_path, non_max_suppression_face
 from utils.loss import compute_loss
 from utils.metrics import ap_per_class, ConfusionMatrix
 from utils.plots import plot_images, output_to_target, plot_study_txt
@@ -117,11 +117,13 @@ def test(data,
             targets[:, 2:6] *= torch.Tensor([width, height, width, height]).to(device)  # to pixels
             lb = [targets[targets[:, 0] == i, 1:] for i in range(nb)] if save_hybrid else []  # for autolabelling
             t = time_synchronized()
-            output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres, labels=lb)
+            #output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres, labels=lb)
+            output = non_max_suppression_face(inf_out, conf_thres=conf_thres, iou_thres=iou_thres, labels=lb)
             t1 += time_synchronized() - t
 
         # Statistics per image
         for si, pred in enumerate(output):
+            pred = torch.cat((pred[:, :5], pred[:, 15:]), 1) # throw landmark in thresh
             labels = targets[targets[:, 0] == si, 1:]
             nl = len(labels)
             tcls = labels[:, 0].tolist() if nl else []  # target class

@@ -139,6 +139,6 @@ https://github.com/deepinsight/insightface
       }
 
 #### Main Contributors
-https://github.com/derronqi
-https://github.com/changhy666
-https://github.com/bobo0810
+https://github.com/derronqi 
+https://github.com/changhy666 
+https://github.com/bobo0810 

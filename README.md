@@ -138,3 +138,7 @@ https://github.com/deepinsight/insightface
       year = {2021}
       }
 
+#### Main Contributors
+https://github.com/derronqi
+https://github.com/changhy666
+https://github.com/bobo0810

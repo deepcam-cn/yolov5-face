@@ -25,9 +25,9 @@ class YoloTrtModel():
         '''
         trt_engine_path = onnx_model_path.replace('.onnx','.trt')
 
-        # ONNX->TensorRT,生成trt引擎文件
+        # ONNX->TensorRT,生成trt引擎文件后可注释
         ONNX_to_TensorRT(fp16_mode=fp16_mode,onnx_model_path=onnx_model_path,trt_engine_path=trt_engine_path)
-        # 初始化TensorRT
+        # 初始化TensorRT, 加载trt引擎文件
         self.model_params=Init_TensorRT(trt_engine_path)
 
         # 输出特征
@@ -62,9 +62,7 @@ class YoloTrtModel():
         stride= torch.tensor([8.,16.,32.]).to(device)
 
         x=[torch.from_numpy(pred[0]).to(device),torch.from_numpy(pred[1]).to(device),torch.from_numpy(pred[2]).to(device)]
-        # 提取自models/yolo.py
-        # ============yolov5-0.5参数 start============
-      
+        # =====提取自models/yolo.py=====
         no=16 # 4坐标+1置信度+10关键点坐标+1类别
         nl=3
      

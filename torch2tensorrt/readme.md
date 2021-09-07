@@ -24,7 +24,7 @@ Image preprocessing -> TensorRT inference -> visualization
 |yolov5s-face|25.2ms|3.0ms|
 |yolov5m-face|61.2ms|3.0ms|
 |yolov5l-face|109.6ms|3.6ms|
-> Note: (1) Model inference  (2) Resolution 640x640
+> Note: (1) Model inference  (2) Resolution 640x640 (3)TensorRT7.2.2-1 cuda11.1 （4）Average time spent in 100 rounds after warm-up
 
 
 

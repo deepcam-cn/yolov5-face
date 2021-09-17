@@ -22,8 +22,9 @@ import onnx
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str, default='./yolov5s.pt', help='weights path')  # from yolov5/models/
-    parser.add_argument('--img-size', nargs='+', type=int, default=[640, 640], help='image size')  # height, width
-    parser.add_argument('--batch-size', type=int, default=1, help='batch size')
+    parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='image size')  # height, width
+    parser.add_argument('--batch_size', type=int, default=1, help='batch size')
+    parser.add_argument('--onnx2pb', action='store_true', default=False, help='export onnx to pb')
     opt = parser.parse_args()
     opt.img_size *= 2 if len(opt.img_size) == 1 else 1  # expand
     print(opt)
@@ -76,3 +77,34 @@ if __name__ == '__main__':
     print('ONNX export success, saved as %s' % f)
     # Finish
     print('\nExport complete (%.2fs). Visualize with https://github.com/lutzroeder/netron.' % (time.time() - t))
+    
+    # PB export
+    if opt.onnx2pb:
+        print('download the newest onnx_tf by https://github.com/onnx/onnx-tensorflow/tree/master/onnx_tf')
+        from onnx_tf.backend import prepare
+        import tensorflow as tf
+
+        outpb = f.replace('.onnx', '.pb')  # filename
+        # strict=True maybe leads to KeyError: 'pyfunc_0', check: https://github.com/onnx/onnx-tensorflow/issues/167
+        tf_rep = prepare(onnx_model, strict=False)  # prepare tf representation
+        tf_rep.export_graph(outpb)  # export the model
+
+        out_onnx = tf_rep.run(img) # onnx output
+
+        # check pb
+        with tf.Graph().as_default():
+            graph_def = tf.GraphDef()
+            with open(outpb, "rb") as f:
+                graph_def.ParseFromString(f.read())
+                tf.import_graph_def(graph_def, name="")
+            with tf.Session() as sess:
+                init = tf.global_variables_initializer()
+                input_x = sess.graph.get_tensor_by_name(input_names[0]+':0')  # input
+                outputs = []
+                for i in output_names:
+                    outputs.append(sess.graph.get_tensor_by_name(i+':0'))
+                out_pb = sess.run(outputs, feed_dict={input_x: img})
+
+        print(f'out_pytorch {y}')
+        print(f'out_onnx {out_onnx}')
+        print(f'out_pb {out_pb}')

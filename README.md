@@ -1,7 +1,7 @@
 ## What's New
 
 **2021.08**: Yolov5-face to TensorRT.  
-Inference time on rxt2080ti.
+Inference time on rtx2080ti.
 |Backbone|Pytorch |TensorRT_FP16 |
 |:---:|:----:|:----:|
 |yolov5n-0.5|11.9ms|2.9ms|

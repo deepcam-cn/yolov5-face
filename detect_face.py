@@ -72,7 +72,7 @@ def show_results(img, xywh, conf, landmarks, class_num):
 
 def detect_one(model, image_path, device):
     # Load model
-    img_size = 2048
+    img_size = 800
     conf_thres = 0.3
     iou_thres = 0.5
 

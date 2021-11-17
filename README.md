@@ -112,8 +112,7 @@ https://github.com/FeiGeChuanShu/ncnn_Android_face/tree/main/ncnn-android-yolov5
 
 #### opencv dnn demo
 
-https://github.com/hpc203/yolov5-dnn-cpp-python-v2
-
+https://github.com/hpc203/yolov5-face-landmarks-opencv-v2
 
 #### References
 

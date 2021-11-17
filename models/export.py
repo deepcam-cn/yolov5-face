@@ -67,8 +67,10 @@ if __name__ == '__main__':
     print('\nStarting ONNX export with onnx %s...' % onnx.__version__)
     f = opt.weights.replace('.pt', '.onnx')  # filename
     model.fuse()  # only for ONNX
-    torch.onnx.export(model, img, f, verbose=False, opset_version=12, input_names=['data'],
-                      output_names=['stride_' + str(int(x)) for x in model.stride])
+    input_names=['data']
+    output_names=['stride_' + str(int(x)) for x in model.stride]
+    torch.onnx.export(model, img, f, verbose=False, opset_version=12, input_names=input_names,
+                      output_names=output_names)
 
     # Checks
     onnx_model = onnx.load(f)  # load onnx model

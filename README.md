@@ -1,5 +1,11 @@
 ## What's New
 
+**2021.11**: BlazeFace
+| Method               | multi_scale_eval | Easy  | Medium | Hard  | \#Params(M) |
+| -------------------- | ---------------- | ----- | ------ | ----- | ----------- |
+| BlazeFace-FPN-SSH    | Ture             | 90.7  | 88.3   | 79.3  | 0.186       |
+| yolov5-blazeface     | True             |       |        |       | 0.189        |
+
 **2021.08**: Yolov5-face to TensorRT.  
 Inference time on rtx2080ti.
 |Backbone|Pytorch |TensorRT_FP16 |

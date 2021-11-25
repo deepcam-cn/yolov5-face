@@ -155,7 +155,75 @@ class ShuffleV2Block(nn.Module):
             out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
         out = channel_shuffle(out, 2)
         return out
+    
+class BlazeBlock(nn.Module):
+    def __init__(self, in_channels,out_channels,mid_channels=None,stride=1):
+        super(BlazeBlock, self).__init__()
+        mid_channels = mid_channels or in_channels
+        assert stride in [1, 2]
+        if stride>1:
+            self.use_pool = True
+        else:
+            self.use_pool = False
 
+        self.branch1 = nn.Sequential(
+            nn.Conv2d(in_channels=in_channels,out_channels=mid_channels,kernel_size=5,stride=stride,padding=2,groups=in_channels),
+            nn.BatchNorm2d(mid_channels),
+            nn.Conv2d(in_channels=mid_channels,out_channels=out_channels,kernel_size=1,stride=1),
+            nn.BatchNorm2d(out_channels),
+        )
+
+        if self.use_pool:
+            self.shortcut = nn.Sequential(
+                nn.MaxPool2d(kernel_size=stride, stride=stride),
+                nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1, stride=1),
+                nn.BatchNorm2d(out_channels),
+            )
+
+        self.relu = nn.SiLU(inplace=True)
+
+    def forward(self, x):
+        branch1 = self.branch1(x)
+        out = (branch1+self.shortcut(x)) if self.use_pool else (branch1+x)
+        return self.relu(out)    
+  
+class DoubleBlazeBlock(nn.Module):
+    def __init__(self,in_channels,out_channels,mid_channels=None,stride=1):
+        super(DoubleBlazeBlock, self).__init__()
+        mid_channels = mid_channels or in_channels
+        assert stride in [1, 2]
+        if stride > 1:
+            self.use_pool = True
+        else:
+            self.use_pool = False
+
+        self.branch1 = nn.Sequential(
+            nn.Conv2d(in_channels=in_channels, out_channels=in_channels, kernel_size=5, stride=stride,padding=2,groups=in_channels),
+            nn.BatchNorm2d(in_channels),
+            nn.Conv2d(in_channels=in_channels, out_channels=mid_channels, kernel_size=1, stride=1),
+            nn.BatchNorm2d(mid_channels),
+            nn.SiLU(inplace=True),
+            nn.Conv2d(in_channels=mid_channels, out_channels=mid_channels, kernel_size=5, stride=1,padding=2),
+            nn.BatchNorm2d(mid_channels),
+            nn.Conv2d(in_channels=mid_channels, out_channels=out_channels, kernel_size=1, stride=1),
+            nn.BatchNorm2d(out_channels),
+        )
+
+        if self.use_pool:
+            self.shortcut = nn.Sequential(
+                nn.MaxPool2d(kernel_size=stride, stride=stride),
+                nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1, stride=1),
+                nn.BatchNorm2d(out_channels),
+            )
+
+        self.relu = nn.SiLU(inplace=True)
+
+    def forward(self, x):
+        branch1 = self.branch1(x)
+        out = (branch1 + self.shortcut(x)) if self.use_pool else (branch1 + x)
+        return self.relu(out)
+    
+    
 class SPP(nn.Module):
     # Spatial pyramid pooling layer used in YOLOv3-SPP
     def __init__(self, c1, c2, k=(5, 9, 13)):

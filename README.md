@@ -3,8 +3,8 @@
 **2021.11**: BlazeFace
 | Method               | multi_scale_eval | Easy  | Medium | Hard  | Model Size(MB) | Link  |
 | -------------------- | ---------------- | ----- | ------ | ----- | -------------- | ----- |
-| BlazeFace            | Ture             | 88.5  | 85.5   | 73.1  | 0.472          | -     |
-| BlazeFace-FPN-SSH    | Ture             | 90.7  | 88.3   | 79.3  | 0.479          | -     |
+| BlazeFace            | Ture             | 88.5  | 85.5   | 73.1  | 0.472          ｜https://github.com/PaddlePaddle/PaddleDetection/tree/release/2.3/configs/face_detection     |
+| BlazeFace-FPN-SSH    | Ture             | 90.7  | 88.3   | 79.3  | 0.479          | https://github.com/PaddlePaddle/PaddleDetection/tree/release/2.3/configs/face_detection     |
 | yolov5-blazeface     | True             | 90.3  | 88.7   | 78.0  | 0.493          | -     |
 
 **2021.08**: Yolov5-face to TensorRT.  

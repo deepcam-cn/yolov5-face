@@ -6,7 +6,7 @@
 | BlazeFace            | Ture        | 88.5  | 85.5   | 73.1  | 0.472          | https://github.com/PaddlePaddle/PaddleDetection |
 | BlazeFace-FPN-SSH    | Ture        | 90.7  | 88.3   | 79.3  | 0.479          | https://github.com/PaddlePaddle/PaddleDetection |
 | yolov5-blazeface     | True        | 90.4  | 88.7   | 78.0  | 0.493          | https://pan.baidu.com/s/1RHp8wa615OuDVhsO-qrMpQ pwd:r3v3 |
-| yolov5-blazeface-fpn | True        | 90.8  | 89.4   | 75.1  | 0.493          |  -    |
+| yolov5-blazeface-fpn | True        | 90.8  | 89.4   | 79.1  | 0.493          |  -    |
 
 **2021.08**: Yolov5-face to TensorRT.  
 Inference time on rtx2080ti.

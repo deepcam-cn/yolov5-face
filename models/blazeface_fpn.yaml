@@ -1,0 +1,38 @@
+# parameters
+nc: 1  # number of classes
+depth_multiple: 1.0  # model depth multiple
+width_multiple: 1.0  # layer channel multiple
+
+# anchors
+anchors:
+  - [5,6,  10,13,  21,26]  # P3/8
+  - [55,72,  225,304,  438,553]  # P4/16
+
+# YOLOv5 backbone
+backbone:
+  # [from, number, module, args]
+  [[-1, 1, Conv, [24, 3, 2]], # 0-P1/2
+   [-1, 2, BlazeBlock, [24]], # 1
+   [-1, 1, BlazeBlock, [48, None, 2]], # 2-P2/4
+   [-1, 2, BlazeBlock, [48]], # 3
+   [-1, 1, DoubleBlazeBlock, [96, 24, 2]], # 4-P3/8
+   [-1, 2, DoubleBlazeBlock, [96, 24]], # 5
+   [-1, 1, DoubleBlazeBlock, [96, 24, 2]], # 6-P4/16
+   [-1, 2, DoubleBlazeBlock, [96, 24]], # 7
+  ]
+
+
+# YOLOv5 head
+head:
+  [[-1, 1, Conv, [48, 1, 1]],  # 8
+   [-1, 1, nn.Upsample, [None, 2, 'nearest']],
+   [[-1, 5], 1, Concat, [1]],  # cat backbone P3
+   [-1, 1, Conv, [48, 1, 1]],  # 11 (P3/8-medium)
+
+   [-1, 1, nn.MaxPool2d, [3, 2, 1]],  # 12
+   [[-1, 7], 1, Concat, [1]],  # cat backbone P3
+   [-1, 1, Conv, [48, 1, 1]],  # 14 (P4/16-large)
+
+   [[11, 14], 1, Detect, [nc, anchors]],  # Detect(P3, P4)
+  ]
+

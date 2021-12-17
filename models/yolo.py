@@ -26,7 +26,6 @@ except ImportError:
 
 class Detect(nn.Module):
     stride = None  # strides computed during build
-    export = False  # onnx export
     export_cat = False  # onnx export cat output
 
     def __init__(self, nc=80, anchors=(), ch=()):  # detection layer
@@ -46,14 +45,6 @@ class Detect(nn.Module):
     def forward(self, x):
         # x = x.copy()  # for profiling
         z = []  # inference output
-       # self.training |= self.export
-        if self.export:
-            for i in range(self.nl):
-                x[i] = self.m[i](x[i])
-                bs, _, ny, nx = x[i].shape  # x(bs,48,20,20) to x(bs,3,20,20,16)
-                x[i] = x[i].view(bs, self.na, self.no, ny, nx).permute(0, 1, 3, 4, 2).contiguous()
-
-            return x
         if self.export_cat:
             for i in range(self.nl):
                 x[i] = self.m[i](x[i])  # conv
@@ -61,7 +52,8 @@ class Detect(nn.Module):
                 x[i] = x[i].view(bs, self.na, self.no, ny, nx).permute(0, 1, 3, 4, 2).contiguous()
 
                 if self.grid[i].shape[2:4] != x[i].shape[2:4]:
-                    self.grid[i] = self._make_grid(nx, ny).to(x[i].device)
+                    # self.grid[i] = self._make_grid(nx, ny).to(x[i].device)
+                    self.grid[i], self.anchor_grid[i] = self._make_grid_new(nx, ny,i)
 
                 y = torch.full_like(x[i], 0)
                 y = y + torch.cat((x[i][:, :, :, :, 0:5].sigmoid(), torch.cat((x[i][:, :, :, :, 5:15], x[i][:, :, :, :, 15:15+self.nc].sigmoid()), 4)), 4)
@@ -122,7 +114,15 @@ class Detect(nn.Module):
         yv, xv = torch.meshgrid([torch.arange(ny), torch.arange(nx)])
         return torch.stack((xv, yv), 2).view((1, 1, ny, nx, 2)).float()
 
-
+    def _make_grid_new(self,nx=20, ny=20,i=0):
+        d = self.anchors[i].device
+        if '1.10.0' in torch.__version__: # torch>=1.10.0 meshgrid workaround for torch>=0.7 compatibility
+            yv, xv = torch.meshgrid([torch.arange(ny).to(d), torch.arange(nx).to(d)], indexing='ij')
+        else:
+            yv, xv = torch.meshgrid([torch.arange(ny).to(d), torch.arange(nx).to(d)])
+        grid = torch.stack((xv, yv), 2).expand((1, self.na, ny, nx, 2)).float()
+        anchor_grid = (self.anchors[i].clone() * self.stride[i]).view((1, self.na, 1, 1, 2)).expand((1, self.na, ny, nx, 2)).float()
+        return grid, anchor_grid
 class Model(nn.Module):
     def __init__(self, cfg='yolov5s.yaml', ch=3, nc=None):  # model, input channels, number of classes
         super(Model, self).__init__()

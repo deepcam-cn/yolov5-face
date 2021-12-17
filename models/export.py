@@ -93,7 +93,8 @@ if __name__ == '__main__':
         im = img.cpu().numpy().astype(np.float32) # torch to numpy
         y_onnx = session.run([session.get_outputs()[0].name], {session.get_inputs()[0].name: im})[0]
         print("pred's shape is ",y_onnx.shape)
-        print("torch_pred - onnx_pred =",(y.cpu().numpy()-y_onnx).sum())
+        print("max(|torch_pred - onnx_pred|） =",abs(y.cpu().numpy()-y_onnx).max())
+        
 
 
 

@@ -25,6 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='image size')  # height, width
     parser.add_argument('--batch_size', type=int, default=1, help='batch size')
     parser.add_argument('--onnx2pb', action='store_true', default=False, help='export onnx to pb')
+    parser.add_argument('--onnx_infer', action='store_true', default=True, help='onnx infer test')
     opt = parser.parse_args()
     opt.img_size *= 2 if len(opt.img_size) == 1 else 1  # expand
     print(opt)
@@ -33,6 +34,9 @@ if __name__ == '__main__':
 
     # Load PyTorch model
     model = attempt_load(opt.weights, map_location=torch.device('cpu'))  # load FP32 model
+    delattr(model.model[-1], 'anchor_grid')
+    model.model[-1].anchor_grid=[torch.zeros(1)] * 3 # nl=3 number of detection layers
+    model.model[-1].export_cat = True
     model.eval()
     labels = model.names
 
@@ -59,16 +63,15 @@ if __name__ == '__main__':
                     m.branch1[i] = SiLU()
             for i in range(len(m.branch2)):
                 if isinstance(m.branch2[i], nn.SiLU):
-                    m.branch2[i] = SiLU()
-    model.model[-1].export = True  # set Detect() layer export=True
+                    m.branch2[i] = SiLU() 
     y = model(img)  # dry run
 
     # ONNX export
     print('\nStarting ONNX export with onnx %s...' % onnx.__version__)
     f = opt.weights.replace('.pt', '.onnx')  # filename
     model.fuse()  # only for ONNX
-    input_names=['data']
-    output_names=['stride_' + str(int(x)) for x in model.stride]
+    input_names=['input']
+    output_names=['output']
     torch.onnx.export(model, img, f, verbose=False, opset_version=12, input_names=input_names,
                       output_names=output_names)
 
@@ -80,6 +83,21 @@ if __name__ == '__main__':
     # Finish
     print('\nExport complete (%.2fs). Visualize with https://github.com/lutzroeder/netron.' % (time.time() - t))
     
+
+    # onnx infer
+    if opt.onnx_infer:
+        import onnxruntime
+        import numpy as np
+        providers =  ['CPUExecutionProvider']
+        session = onnxruntime.InferenceSession(f, providers=providers)
+        im = img.cpu().numpy().astype(np.float32) # torch to numpy
+        y_onnx = session.run([session.get_outputs()[0].name], {session.get_inputs()[0].name: im})[0]
+        print("pred's shape is ",y_onnx.shape)
+        print("max(|torch_pred - onnx_pred|） =",abs(y.cpu().numpy()-y_onnx).max())
+        
+
+
+
     # PB export
     if opt.onnx2pb:
         print('download the newest onnx_tf by https://github.com/onnx/onnx-tensorflow/tree/master/onnx_tf')

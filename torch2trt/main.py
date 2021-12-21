@@ -3,12 +3,13 @@ import sys
 import cv2
 import copy
 import torch
+import argparse
 root_path=os.path.dirname(os.path.abspath(os.path.dirname(__file__))) # 项目根路径：获取当前路径，再上级路径
 sys.path.append(root_path)  # 将项目根路径写入系统路径
 from utils.general import check_img_size,non_max_suppression_face,scale_coords,xyxy2xywh
 from utils.datasets import letterbox
-from torch2tensorrt.yolo_trt_model import YoloTrtModel
 from detect_face import scale_coords_landmarks,show_results
+from torch2trt.trt_model import TrtModel
 cur_path=os.path.abspath(os.path.dirname(__file__))
 def img_process(img_path,long_side=640,stride_max=32):
     '''
@@ -34,7 +35,7 @@ def img_process(img_path,long_side=640,stride_max=32):
         img = img.unsqueeze(0)
     return img,orgimg
 
-def img_vis(img,orgimg,pred,device,vis_thres = 0.6):
+def img_vis(img,orgimg,pred,vis_thres = 0.6):
     '''
     预测可视化
     vis_thres: 可视化阈值
@@ -46,8 +47,8 @@ def img_vis(img,orgimg,pred,device,vis_thres = 0.6):
     no_vis_nums=0
     # Process detections
     for i, det in enumerate(pred):  # detections per image
-        gn = torch.tensor(orgimg.shape)[[1, 0, 1, 0]].to(device)  # normalization gain whwh
-        gn_lks = torch.tensor(orgimg.shape)[[1, 0, 1, 0, 1, 0, 1, 0, 1, 0]].to(device)  # normalization gain landmarks
+        gn = torch.tensor(orgimg.shape)[[1, 0, 1, 0]]  # normalization gain whwh
+        gn_lks = torch.tensor(orgimg.shape)[[1, 0, 1, 0, 1, 0, 1, 0, 1, 0]]  # normalization gain landmarks
         if len(det):
             # Rescale boxes from img_size to im0 size
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], orgimg.shape).round()
@@ -76,27 +77,22 @@ def img_vis(img,orgimg,pred,device,vis_thres = 0.6):
 
 
 if __name__ == '__main__':
-    # ============参数================
-    img_path=cur_path+"/sample.jpg" #测试图片路径
-    device="cuda:0" 
-    onnx_model_path=cur_path+"/../../yolov5l-face.onnx" #ONNX模型路径
-    fp16_mode=True  #True则FP16推理
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--img_path', type=str, default=cur_path+"/sample.jpg", help='img path') 
+    parser.add_argument('--trt_path', type=str, required=True, help='trt_path') 
+    parser.add_argument('--output_shape', type=list, default=[1,25200,16], help='input[1,3,640,640] ->  output[1,25200,16]') 
+    opt = parser.parse_args()
 
-    # ============图像预处理================
-    img,orgimg=img_process(img_path) #[1,3,640,640]
-    
-    # ============TensorRT推理================
-    # 初始化TensorRT引擎
-    yolo_trt_model=YoloTrtModel(device,onnx_model_path,fp16_mode)
 
-    # 耗时统计 = tensorrt推理 + torch后处理
-    pred=yolo_trt_model(img.cpu().numpy()) #tensorrt推理
-    pred=yolo_trt_model.after_process(pred,device) # torch后处理
+    img,orgimg=img_process(opt.img_path) 
+    model=TrtModel(opt.trt_path)
+    pred=model(img.numpy()).reshape(opt.output_shape) # forward
+    model.destroy()
 
     # Apply NMS
-    pred = non_max_suppression_face(pred, conf_thres=0.3, iou_thres=0.5)
+    pred = non_max_suppression_face(torch.from_numpy(pred), conf_thres=0.3, iou_thres=0.5)
    
     # ============可视化================
-    img_vis(img,orgimg,pred,device)
+    img_vis(img,orgimg,pred)
 
 

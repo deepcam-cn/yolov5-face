@@ -18,6 +18,7 @@ from models.experimental import attempt_load
 from utils.activations import Hardswish, SiLU
 from utils.general import set_logging, check_img_size
 import onnx
+from torch2trt.trt_model import ONNX_to_TRT
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -26,6 +27,10 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=1, help='batch size')
     parser.add_argument('--onnx2pb', action='store_true', default=False, help='export onnx to pb')
     parser.add_argument('--onnx_infer', action='store_true', default=True, help='onnx infer test')
+    #=======================TensorRT=================================
+    parser.add_argument('--onnx2trt', action='store_true', default=False, help='export onnx to tensorrt')
+    parser.add_argument('--fp16_trt', action='store_true', default=False, help='fp16 infer')
+    #================================================================
     opt = parser.parse_args()
     opt.img_size *= 2 if len(opt.img_size) == 1 else 1  # expand
     print(opt)
@@ -94,9 +99,12 @@ if __name__ == '__main__':
         y_onnx = session.run([session.get_outputs()[0].name], {session.get_inputs()[0].name: im})[0]
         print("pred's shape is ",y_onnx.shape)
         print("max(|torch_pred - onnx_pred|） =",abs(y.cpu().numpy()-y_onnx).max())
-        
+    
 
-
+    # TensorRT export
+    if opt.onnx2trt:
+        print('\nStarting TensorRT...')
+        ONNX_to_TRT(onnx_model_path=f,trt_engine_path=f.replace('.onnx', '.trt'),fp16_mode=opt.fp16_trt)
 
     # PB export
     if opt.onnx2pb:

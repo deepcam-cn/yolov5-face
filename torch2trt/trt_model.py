@@ -3,6 +3,11 @@ import pycuda.driver as cuda
 import tensorrt as trt
 import numpy as np
 
+EXPLICIT_BATCH = 1 << (int)(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
+TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
+def GiB(val):
+    return val * 1 << 30
+
 def ONNX_to_TRT(onnx_model_path=None,trt_engine_path=None,fp16_mode=False):
     """
     仅适用TensorRT V8版本
@@ -12,9 +17,6 @@ def ONNX_to_TRT(onnx_model_path=None,trt_engine_path=None,fp16_mode=False):
     onnx_model_path: 将加载的onnx权重路径
     trt_engine_path: trt引擎文件保存路径
     """
-    # 以trt的Logger为参数，使用builder创建计算图类型INetworkDefinition
-   
-    
     builder = trt.Builder(TRT_LOGGER)
     network = builder.create_network(EXPLICIT_BATCH)
     parser = trt.OnnxParser(network, TRT_LOGGER)

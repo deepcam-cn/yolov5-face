@@ -1,23 +1,25 @@
 ## What's New
 
+**2021.12**: Yolov5-face to TensorRT. 
+
+|   Backbone   | Pytorch(ms) | TensorRT_FP16(ms) |
+| :----------: | :---------: | :---------------: |
+| yolov5n-0.5  |     7.7     |        2.1        |
+| yolov5n-face |     7.7     |        2.4        |
+| yolov5s-face |     5.6     |        2.2        |
+| yolov5m-face |     9.9     |        3.3        |
+| yolov5l-face |    15.9     |        4.5        |
+
+> Pytorch=1.10.0+cu102    TensorRT=8.2.0.6   Hardware=rtx2080ti
+
 **2021.11**: BlazeFace
+
 | Method               | multi scale | Easy  | Medium | Hard  | Model Size(MB) | Link  |
 | -------------------- | ----------- | ----- | ------ | ----- | -------------- | ----- |
 | BlazeFace            | Ture        | 88.5  | 85.5   | 73.1  | 0.472          | https://github.com/PaddlePaddle/PaddleDetection |
 | BlazeFace-FPN-SSH    | Ture        | 90.7  | 88.3   | 79.3  | 0.479          | https://github.com/PaddlePaddle/PaddleDetection |
 | yolov5-blazeface     | True        | 90.4  | 88.7   | 78.0  | 0.493          | https://pan.baidu.com/s/1RHp8wa615OuDVhsO-qrMpQ pwd:r3v3 |
 | yolov5-blazeface-fpn | True        | 90.8  | 89.4   | 79.1  | 0.493          |  -    |
-
-**2021.08**: Yolov5-face to TensorRT.  
-Inference time on rtx2080ti.
-|Backbone|Pytorch |TensorRT_FP16 |
-|:---:|:----:|:----:|
-|yolov5n-0.5|11.9ms|2.9ms|
-|yolov5n-face|20.7ms|2.5ms|
-|yolov5s-face|25.2ms|3.0ms|
-|yolov5m-face|61.2ms|3.0ms|
-|yolov5l-face|109.6ms|3.6ms|
-> Note: (1) Model inference  (2) Resolution 640x640
 
 
 **2021.08**: Add new training dataset [Multi-Task-Facial](https://drive.google.com/file/d/1Pwd6ga06cDjeOX20RSC1KWiT888Q9IpM/view?usp=sharing),improve large face detection.
@@ -137,7 +139,7 @@ https://github.com/deepinsight/insightface
 
 #### Citation 
 - If you think this work is useful for you, please cite 
- 
+
       @article{YOLO5Face,
       title = {YOLO5Face: Why Reinventing a Face Detector},
       author = {Delong Qi and Weijun Tan and Qi Yao and Jingfeng Liu},

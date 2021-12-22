@@ -4,10 +4,6 @@ English | [简体中文](readme_CN.md)
 
 # Overall process
 
-|Pytorch |TensorRT |
-|:----:|:----:|
-|1.10 |<font color="red">8.2</font> |
-
 ## 1.Pytorch->TensorRT
 
  ```shell
@@ -25,15 +21,19 @@ Image preprocessing -> TensorRT inference -> visualization
 
 # Time-consuming comparison
 
-TODO
-<!-- | |Pytorch |TensorRT_FP16 |
+| Backbone |Pytorch(ms) |TensorRT_FP16(ms) |
 |:---:|:----:|:----:|
-|yolov5n-0.5|11.9ms|2.9ms|
-|yolov5n-face|20.7ms|2.5ms|
-|yolov5s-face|25.2ms|3.0ms|
-|yolov5m-face|61.2ms|3.0ms|
-|yolov5l-face|109.6ms|3.6ms|
-> Note: (1) Model inference  (2) Resolution 640x640 (3)TensorRT7.2.2-1 cuda11.1 （4）Average time spent in 100 rounds after warm-up -->
+|yolov5n-0.5|     7.7     |        2.1        |
+|yolov5n-face|     7.7     |        2.4        |
+|yolov5s-face|     5.6     |        2.2        |
+|yolov5m-face|     9.9     |        3.3        |
+|yolov5l-face|    15.9     |        4.5        |
+
+>   Pytorch=1.10.0+cu102    TensorRT=8.2.0.6   Hardware=rtx2080ti
+
+```shell
+python torch2trt/speed.py --torch_path "torch's path" --trt_path "trt's path"
+```
 
 
 

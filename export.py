@@ -18,13 +18,13 @@ from models.experimental import attempt_load
 from utils.activations import Hardswish, SiLU
 from utils.general import set_logging, check_img_size
 import onnx
-from torch2trt.trt_model import ONNX_to_TRT
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str, default='./yolov5s.pt', help='weights path')  # from yolov5/models/
     parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='image size')  # height, width
     parser.add_argument('--batch_size', type=int, default=1, help='batch size')
+    parser.add_argument('--simplify', action='store_true', default=False, help='simplify onnx')
     parser.add_argument('--onnx2pb', action='store_true', default=False, help='export onnx to pb')
     parser.add_argument('--onnx_infer', action='store_true', default=True, help='onnx infer test')
     #=======================TensorRT=================================
@@ -68,7 +68,7 @@ if __name__ == '__main__':
                     m.branch1[i] = SiLU()
             for i in range(len(m.branch2)):
                 if isinstance(m.branch2[i], nn.SiLU):
-                    m.branch2[i] = SiLU() 
+                    m.branch2[i] = SiLU()
     y = model(img)  # dry run
 
     # ONNX export
@@ -83,11 +83,22 @@ if __name__ == '__main__':
     # Checks
     onnx_model = onnx.load(f)  # load onnx model
     onnx.checker.check_model(onnx_model)  # check onnx model
-    # print(onnx.helper.printable_graph(onnx_model.graph))  # print a human readable model
+
+    # https://github.com/daquexian/onnx-simplifier
+    if opt.simplify:
+        try:
+            import onnxsim
+            print(f'simplifying with onnx-simplifier {onnxsim.__version__}...')
+            onnx_model, check = onnxsim.simplify(onnx_model)
+            assert check, "simplify check failed "
+            onnx.save(onnx_model, f)
+        except Exception as e:
+            print(f"simplifer failure: {e}")
+
     print('ONNX export success, saved as %s' % f)
     # Finish
     print('\nExport complete (%.2fs). Visualize with https://github.com/lutzroeder/netron.' % (time.time() - t))
-    
+
 
     # onnx infer
     if opt.onnx_infer:
@@ -99,10 +110,11 @@ if __name__ == '__main__':
         y_onnx = session.run([session.get_outputs()[0].name], {session.get_inputs()[0].name: im})[0]
         print("pred's shape is ",y_onnx.shape)
         print("max(|torch_pred - onnx_pred|） =",abs(y.cpu().numpy()-y_onnx).max())
-    
+
 
     # TensorRT export
     if opt.onnx2trt:
+        from torch2trt.trt_model import ONNX_to_TRT
         print('\nStarting TensorRT...')
         ONNX_to_TRT(onnx_model_path=f,trt_engine_path=f.replace('.onnx', '.trt'),fp16_mode=opt.fp16_trt)
 

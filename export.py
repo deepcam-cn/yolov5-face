@@ -25,6 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='image size')  # height, width
     parser.add_argument('--batch_size', type=int, default=1, help='batch size')
     parser.add_argument('--simplify', action='store_true', default=False, help='simplify onnx')
+    parser.add_argument('--dynamic', action='store_true', default=False, help='enable dynamic axis in onnx model')
     parser.add_argument('--onnx2pb', action='store_true', default=False, help='export onnx to pb')
     parser.add_argument('--onnx_infer', action='store_true', default=True, help='onnx infer test')
     #=======================TensorRT=================================
@@ -77,8 +78,12 @@ if __name__ == '__main__':
     model.fuse()  # only for ONNX
     input_names=['input']
     output_names=['output']
-    torch.onnx.export(model, img, f, verbose=False, opset_version=12, input_names=input_names,
-                      output_names=output_names)
+    torch.onnx.export(model, img, f, verbose=False, opset_version=12, 
+        input_names=input_names,
+        output_names=output_names,
+        dynamic_axes = {'input': {0: 'batch'},
+                        'output': {0: 'batch'}
+                        } if opt.dynamic else None)
 
     # Checks
     onnx_model = onnx.load(f)  # load onnx model
@@ -89,7 +94,9 @@ if __name__ == '__main__':
         try:
             import onnxsim
             print(f'simplifying with onnx-simplifier {onnxsim.__version__}...')
-            onnx_model, check = onnxsim.simplify(onnx_model)
+            onnx_model, check = onnxsim.simplify(onnx_model,
+                dynamic_input_shape=opt.dynamic,
+                input_shapes={'input': list(img.shape)} if opt.dynamic else None)
             assert check, "simplify check failed "
             onnx.save(onnx_model, f)
         except Exception as e:

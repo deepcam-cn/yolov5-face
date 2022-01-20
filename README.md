@@ -124,6 +124,16 @@ https://github.com/FeiGeChuanShu/ncnn_Android_face/tree/main/ncnn-android-yolov5
 
 https://github.com/hpc203/yolov5-face-landmarks-opencv-v2
 
+#### ONNXRuntime/MNN/TNN/NCNN C++ demo
+
+https://github.com/DefTruth/lite.ai.toolkit/blob/main/lite/ort/cv/yolo5face.cpp
+
+https://github.com/DefTruth/lite.ai.toolkit/blob/main/lite/mnn/cv/mnn_yolo5face.cpp
+
+https://github.com/DefTruth/lite.ai.toolkit/blob/main/lite/tnn/cv/tnn_yolo5face.cpp
+
+https://github.com/DefTruth/lite.ai.toolkit/blob/main/lite/ncnn/cv/ncnn_yolo5face.cpp
+
 #### References
 
 https://github.com/ultralytics/yolov5

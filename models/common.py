@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw
 from utils.datasets import letterbox
 from utils.general import non_max_suppression, make_divisible, scale_coords, xyxy2xywh
 from utils.plots import color_list
+from utils.drop import DropBlock2d 
 
 def autopad(k, p=None):  # kernel, padding
     # Pad to 'same'
@@ -36,17 +37,21 @@ def DWConv(c1, c2, k=1, s=1, act=True):
 
 class Conv(nn.Module):
     # Standard convolution
-    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):  # ch_in, ch_out, kernel, stride, padding, groups
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True, drop_block=None):  # ch_in, ch_out, kernel, stride, padding, groups
         super(Conv, self).__init__()
+        self.drop_block = drop_block
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p), groups=g, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = nn.SiLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
-        #self.act = self.act = nn.LeakyReLU(0.1, inplace=True) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
 
     def forward(self, x):
+        if self.drop_block is not None:
+            self.act(self.drop_block(self.bn(self.conv(x))))
         return self.act(self.bn(self.conv(x)))
 
     def fuseforward(self, x):
+        #if self.drop_block is not None:
+        #    self.act(self.drop_block(self.bn(self.conv(x))))
         return self.act(self.conv(x))
 
 class StemBlock(nn.Module):
@@ -68,11 +73,11 @@ class StemBlock(nn.Module):
 
 class Bottleneck(nn.Module):
     # Standard bottleneck
-    def __init__(self, c1, c2, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
+    def __init__(self, c1, c2, shortcut=True, g=1, e=0.5, drop_block=None):  # ch_in, ch_out, shortcut, groups, expansion
         super(Bottleneck, self).__init__()
         c_ = int(c2 * e)  # hidden channels
-        self.cv1 = Conv(c1, c_, 1, 1)
-        self.cv2 = Conv(c_, c2, 3, 1, g=g)
+        self.cv1 = Conv(c1, c_, 1, 1, drop_block=drop_block)
+        self.cv2 = Conv(c_, c2, 3, 1, g=g, drop_block=drop_block)
         self.add = shortcut and c1 == c2
 
     def forward(self, x):
@@ -89,7 +94,7 @@ class BottleneckCSP(nn.Module):
         self.cv4 = Conv(2 * c_, c2, 1, 1)
         self.bn = nn.BatchNorm2d(2 * c_)  # applied to cat(cv2, cv3)
         self.act = nn.LeakyReLU(0.1, inplace=True)
-        self.m = nn.Sequential(*[Bottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)])
+        self.m = nn.Sequential(*[Bottleneck(c_, c_, shortcut, g, e=1.0, drop_block=drop_block) for _ in range(n)])
 
     def forward(self, x):
         y1 = self.cv3(self.m(self.cv1(x)))
@@ -99,13 +104,14 @@ class BottleneckCSP(nn.Module):
 
 class C3(nn.Module):
     # CSP Bottleneck with 3 convolutions
-    def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
+    def __init__(self, c1, c2, n=1, shortcut=True, drop_block_rate=0., g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
         super(C3, self).__init__()
+        drop_block = DropBlock2d(drop_block_rate, 5, 0.25) if drop_block_rate else None
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = Conv(c1, c_, 1, 1)
         self.cv2 = Conv(c1, c_, 1, 1)
         self.cv3 = Conv(2 * c_, c2, 1)  # act=FReLU(c2)
-        self.m = nn.Sequential(*[Bottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)])
+        self.m = nn.Sequential(*[Bottleneck(c_, c_, shortcut, g, e=1.0, drop_block=drop_block) for _ in range(n)])
 
     def forward(self, x):
         return self.cv3(torch.cat((self.m(self.cv1(x)), self.cv2(x)), dim=1))
@@ -127,7 +133,7 @@ class ShuffleV2Block(nn.Module):
                 nn.BatchNorm2d(inp),
                 nn.Conv2d(inp, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
                 nn.BatchNorm2d(branch_features),
-                nn.SiLU(),
+                nn.LeakyReLU(0.1, inplace=True),
             )
         else:
             self.branch1 = nn.Sequential()
@@ -135,12 +141,12 @@ class ShuffleV2Block(nn.Module):
         self.branch2 = nn.Sequential(
             nn.Conv2d(inp if (self.stride > 1) else branch_features, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
             nn.BatchNorm2d(branch_features),
-            nn.SiLU(),
+            nn.LeakyReLU(0.1, inplace=True),
             self.depthwise_conv(branch_features, branch_features, kernel_size=3, stride=self.stride, padding=1),
             nn.BatchNorm2d(branch_features),
             nn.Conv2d(branch_features, branch_features, kernel_size=1, stride=1, padding=0, bias=False),
             nn.BatchNorm2d(branch_features),
-            nn.SiLU(),
+            nn.LeakyReLU(0.1, inplace=True),
         )
 
     @staticmethod
@@ -155,7 +161,7 @@ class ShuffleV2Block(nn.Module):
             out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
         out = channel_shuffle(out, 2)
         return out
-    
+
 class BlazeBlock(nn.Module):
     def __init__(self, in_channels,out_channels,mid_channels=None,stride=1):
         super(BlazeBlock, self).__init__()
@@ -185,8 +191,8 @@ class BlazeBlock(nn.Module):
     def forward(self, x):
         branch1 = self.branch1(x)
         out = (branch1+self.shortcut(x)) if self.use_pool else (branch1+x)
-        return self.relu(out)    
-  
+        return self.relu(out)
+
 class DoubleBlazeBlock(nn.Module):
     def __init__(self,in_channels,out_channels,mid_channels=None,stride=1):
         super(DoubleBlazeBlock, self).__init__()
@@ -222,8 +228,7 @@ class DoubleBlazeBlock(nn.Module):
         branch1 = self.branch1(x)
         out = (branch1 + self.shortcut(x)) if self.use_pool else (branch1 + x)
         return self.relu(out)
-    
-    
+
 class SPP(nn.Module):
     # Spatial pyramid pooling layer used in YOLOv3-SPP
     def __init__(self, c1, c2, k=(5, 9, 13)):

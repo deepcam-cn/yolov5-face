@@ -3,7 +3,8 @@
 import numpy as np
 import torch
 import torch.nn as nn
-
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 from models.common import Conv, DWConv
 from utils.google_utils import attempt_download
 

@@ -110,7 +110,7 @@ class TrtModel():
         cuda.memcpy_dtoh_async(host_outputs[0], cuda_outputs[0], stream)
         stream.synchronize()
         self.ctx.pop()
-        return host_outputs[0]
+        return host_outputs[0].copy()
 
 
     def destroy(self):

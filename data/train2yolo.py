@@ -105,19 +105,29 @@ def detection_collate(batch):
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         print('Missing path to WIDERFACE train folder.')
-        print('Run command: python3 train2yolo.py /path/to/widerface/train')
+        print('Run command: python3 train2yolo.py /path/to/original/widerface/train [/path/to/save/widerface/train]')
         exit(1)
-    elif len(sys.argv) > 2:
+    elif len(sys.argv) > 3:
         print('Too many arguments were provided.')
-        print('Run command: python3 train2yolo.py /path/to/widerface/train')
+        print('Run command: python3 train2yolo.py /path/to/original/widerface/train [/path/to/save/widerface/train]')
         exit(1)
+    original_path = sys.argv[1]
 
-    save_path = sys.argv[1]
-    if not os.path.isfile(os.path.join(save_path, 'label.txt')):
+    if len(sys.argv) == 2:
+        if not os.path.isdir('widerface'):
+            os.mkdir('widerface')
+        if not os.path.isdir('widerface/train'):
+            os.mkdir('widerface/train')
+
+        save_path = 'widerface/train'
+    else:
+        save_path = sys.argv[2]
+
+    if not os.path.isfile(os.path.join(original_path, 'label.txt')):
         print('Missing label.txt file.')
         exit(1)
 
-    aa = WiderFaceDetection(os.path.join(save_path, 'label.txt'))
+    aa = WiderFaceDetection(os.path.join(original_path, 'label.txt'))
 
     for i in range(len(aa.imgs_path)):
         print(i, aa.imgs_path[i])
@@ -159,7 +169,7 @@ if __name__ == '__main__':
                 annotation[0, 13] = label[17] / height  # l4_y
                 str_label = "0 "
                 for i in range(len(annotation[0])):
-                    str_label = str_label + " "+str(annotation[0][i])
+                    str_label = str_label + " " + str(annotation[0][i])
                 str_label = str_label.replace('[', '').replace(']', '')
                 str_label = str_label.replace(',', '') + '\n'
                 f.write(str_label)

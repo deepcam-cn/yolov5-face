@@ -88,8 +88,9 @@ Single Scale Inference on VGA resolution（max side is equal to 640 and scale).
 2. Download annotation files from [google drive](https://drive.google.com/file/d/1tU_IjyOwGQfGNUvZGwWWM4SwxKp2PUQ8/view?usp=sharing).
 
 ```shell
-python3 data/train2yolo.py /path/to/widerface/train
-python3 val2yolo.py
+cd data
+python3 train2yolo.py /path/to/original/widerface/train [/path/to/save/widerface/train]
+python3 val2yolo.py  /path/to/original/widerface [/path/to/save/widerface/val]
 ```
 
 

@@ -47,20 +47,20 @@ def scale_coords_landmarks(img1_shape, coords, img0_shape, ratio_pad=None):
     coords[:, 9].clamp_(0, img0_shape[0])  # y5
     return coords
 
-def show_results(img, xywh, conf, landmarks, class_num):
+def show_results(img, xyxy, conf, landmarks, class_num):
     h,w,c = img.shape
     tl = 1 or round(0.002 * (h + w) / 2) + 1  # line/font thickness
-    x1 = int(xywh[0] * w - 0.5 * xywh[2] * w)
-    y1 = int(xywh[1] * h - 0.5 * xywh[3] * h)
-    x2 = int(xywh[0] * w + 0.5 * xywh[2] * w)
-    y2 = int(xywh[1] * h + 0.5 * xywh[3] * h)
+    x1 = int(xyxy[0])
+    y1 = int(xyxy[1])
+    x2 = int(xyxy[2])
+    y2 = int(xyxy[3])
     cv2.rectangle(img, (x1,y1), (x2, y2), (0,255,0), thickness=tl, lineType=cv2.LINE_AA)
 
     clors = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(0,255,255)]
 
     for i in range(5):
-        point_x = int(landmarks[2 * i] * w)
-        point_y = int(landmarks[2 * i + 1] * h)
+        point_x = int(landmarks[2 * i])
+        point_y = int(landmarks[2 * i + 1])
         cv2.circle(img, (point_x, point_y), tl+1, clors[i], -1)
 
     tf = max(tl - 1, 1)  # font thickness
@@ -112,8 +112,6 @@ def detect_one(model, image_path, device):
 
     # Process detections
     for i, det in enumerate(pred):  # detections per image
-        gn = torch.tensor(orgimg.shape)[[1, 0, 1, 0]].to(device)  # normalization gain whwh
-        gn_lks = torch.tensor(orgimg.shape)[[1, 0, 1, 0, 1, 0, 1, 0, 1, 0]].to(device)  # normalization gain landmarks
         if len(det):
             # Rescale boxes from img_size to im0 size
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], orgimg.shape).round()
@@ -125,11 +123,11 @@ def detect_one(model, image_path, device):
             det[:, 5:15] = scale_coords_landmarks(img.shape[2:], det[:, 5:15], orgimg.shape).round()
 
             for j in range(det.size()[0]):
-                xywh = (xyxy2xywh(det[j, :4].view(1, 4)) / gn).view(-1).tolist()
+                xyxy = det[j, :4].view(-1).tolist()
                 conf = det[j, 4].cpu().numpy()
-                landmarks = (det[j, 5:15].view(1, 10) / gn_lks).view(-1).tolist()
+                landmarks = det[j, 5:15].view(-1).tolist()
                 class_num = det[j, 15].cpu().numpy()
-                orgimg = show_results(orgimg, xywh, conf, landmarks, class_num)
+                orgimg = show_results(orgimg, xyxy, conf, landmarks, class_num)
 
     cv2.imwrite('result.jpg', orgimg)
 

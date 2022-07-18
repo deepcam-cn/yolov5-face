@@ -24,7 +24,6 @@ if __name__ == '__main__':
     parser.add_argument('--weights', type=str, default='./yolov5s.pt', help='weights path')  # from yolov5/models/
     parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='image size')  # height, width
     parser.add_argument('--batch_size', type=int, default=1, help='batch size')
-    parser.add_argument('--simplify', action='store_true', default=False, help='simplify onnx')
     parser.add_argument('--dynamic', action='store_true', default=False, help='enable dynamic axis in onnx model')
     parser.add_argument('--onnx2pb', action='store_true', default=False, help='export onnx to pb')
     parser.add_argument('--onnx_infer', action='store_true', default=True, help='onnx infer test')
@@ -88,20 +87,6 @@ if __name__ == '__main__':
     # Checks
     onnx_model = onnx.load(f)  # load onnx model
     onnx.checker.check_model(onnx_model)  # check onnx model
-
-    # https://github.com/daquexian/onnx-simplifier
-    if opt.simplify:
-        try:
-            import onnxsim
-            print(f'simplifying with onnx-simplifier {onnxsim.__version__}...')
-            onnx_model, check = onnxsim.simplify(onnx_model,
-                dynamic_input_shape=opt.dynamic,
-                input_shapes={'input': list(img.shape)} if opt.dynamic else None)
-            assert check, "simplify check failed "
-            onnx.save(onnx_model, f)
-        except Exception as e:
-            print(f"simplifer failure: {e}")
-
     print('ONNX export success, saved as %s' % f)
     # Finish
     print('\nExport complete (%.2fs). Visualize with https://github.com/lutzroeder/netron.' % (time.time() - t))

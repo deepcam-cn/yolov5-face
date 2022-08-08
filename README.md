@@ -1,5 +1,13 @@
 ## What's New
 
+**2021.11**: yolov7
+
+| Method         | Easy  | Medium | Hard  | Model Size(MB) | Link  |
+| ---------------| ----- | ------ | ----- | -------------- | ----- |
+| yolov7-tiny    | -     | -      | -     | -              | -     |
+| yolov7         | -     | -      | -     | -              | -     |
+
+
 **2021.12**: Yolov5-face to TensorRT. 
 
 |   Backbone   | Pytorch(ms) | TensorRT_FP16(ms) |

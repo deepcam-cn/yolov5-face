@@ -1,6 +1,6 @@
 ## What's New
 
-**2021.11**: yolov7
+**2022.8**: yolov7
 
 | Method         | Easy  | Medium | Hard  | Model Size(MB) | Link  |
 | ---------------| ----- | ------ | ----- | -------------- | ----- |

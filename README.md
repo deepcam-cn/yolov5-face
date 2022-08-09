@@ -4,7 +4,7 @@
 
 | Method         | Easy  | Medium | Hard  | Model Size(MB) | Link  |
 | ---------------| ----- | ------ | ----- | -------------- | ----- |
-| yolov7-tiny    | -     | -      | -     | -              | -     |
+| yolov7-tiny    | 94.0  | 92.3   | 83.2  | 12MB           | -     |
 | yolov7         | -     | -      | -     | -              | -     |
 
 

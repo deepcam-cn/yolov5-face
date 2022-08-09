@@ -2,10 +2,10 @@
 
 **2022.8**: yolov7
 
-| Method         | Easy  | Medium | Hard  | Model Size(MB) | Link  |
+| Method         | Easy  | Medium | Hard  | #Flops(G)      | Link  |
 | ---------------| ----- | ------ | ----- | -------------- | ----- |
-| yolov7-tiny    | 94.0  | 92.3   | 83.2  | 12MB           | -     |
-| yolov7         | -     | -      | -     | -              | -     |
+| yolov7-tiny    | 94.0  | 92.3   | 83.2  | 4.960          | -     |
+| yolov7         | -     | -      | -     | 36.946         | -     |
 
 
 **2021.12**: Yolov5-face to TensorRT. 

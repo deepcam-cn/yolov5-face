@@ -122,12 +122,13 @@ python3 evaluation.py
 
 #### Test
 
-![](data/images/result.png)
+![](data/images/result.jpg)
 
 #### Landmark Visulization 
 
-![](data/images/landmark.jpg)
-!YOLO5Face was used the 3rd stand-face track of the ICCV2021 Masked Face Recognition Chanllenge. 
+![](data/images/landmark.png)
+
+**YOLO5Face was used the 3rd stand-face track of the ICCV2021 Masked Face Recognition Chanllenge.** 
 
 
 #### Android demo

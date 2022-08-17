@@ -127,8 +127,8 @@ python3 evaluation.py
 #### Landmark Visulization 
 
 ![](data/images/landmark.png)
-
-**YOLO5Face was used the 3rd stand-face track of the ICCV2021 Masked Face Recognition Chanllenge.** 
+First row: RetinaFace, 2nd row: YOLOv5m-Face 
+**YOLO5Face was used in the 3rd place standard face recogntion track of the [ICCV2021 Masked Face Recognition Chanllenge](https://www.face-benchmark.org/challenge.html).** 
 
 
 #### Android demo

@@ -124,6 +124,10 @@ python3 evaluation.py
 
 ![](data/images/result.jpg)
 
+#### Landmark Visulization 
+
+![](data/images/landmark.jpg)
+
 
 #### Android demo
 

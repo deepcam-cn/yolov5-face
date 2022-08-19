@@ -128,7 +128,7 @@ python3 evaluation.py
 
 ![](data/images/landmark.png)
 First row: RetinaFace, 2nd row: YOLOv5m-Face 
-**YOLO5Face was used in the 3rd place standard face recogntion track of the [ICCV2021 Masked Face Recognition Chanllenge](https://www.face-benchmark.org/challenge.html).** 
+**YOLO5Face was used in the 3rd place standard face recogntion track of the [ICCV2021 Masked Face Recognition Challenge](https://www.face-benchmark.org/challenge.html).** 
 
 
 #### Android demo
@@ -171,11 +171,4 @@ https://github.com/deepinsight/insightface
       booktitle = {ArXiv preprint ArXiv:2105.12931},
       year = {2021}
       }
-
-#### Main Contributors
-https://github.com/derronqi  
-
-https://github.com/changhy666 
-
-https://github.com/bobo0810 
 

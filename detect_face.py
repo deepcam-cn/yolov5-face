@@ -108,7 +108,7 @@ def detect(
     if webcam:
         print('loading streams:', source)
         dataset = LoadStreams(source, img_size=imgsz)
-        bs = len(dataset)  # batch_size
+        bs = 1  # batch_size
     else:
         print('loading images', source)
         dataset = LoadImages(source, img_size=imgsz)
@@ -116,8 +116,7 @@ def detect(
     vid_path, vid_writer = [None] * bs, [None] * bs
     
     for path, im, im0s, vid_cap in dataset:
-        save_path = str(Path(save_dir) / Path(path).name)  # im.jpg
-
+        
         if len(im.shape) == 4:
             orgimg = np.squeeze(im.transpose(0, 2, 3, 1), axis= 0)
         else:
@@ -145,22 +144,31 @@ def detect(
 
         # Inference
         pred = model(img)[0]
-        print(pred.shape[0], 'face' if pred.shape[0] == 1 else 'faces')
-
+        
         # Apply NMS
         pred = non_max_suppression_face(pred, conf_thres, iou_thres)
+        print(len(pred[0]), 'face' if len(pred[0]) == 1 else 'faces')
 
         # Process detections
         for i, det in enumerate(pred):  # detections per image
+            
+            if webcam:  # batch_size >= 1
+                p, im0, frame = path[i], im0s[i].copy(), dataset.count
+            else:
+                p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
+            
+            p = Path(p)  # to Path
+            save_path = str(Path(save_dir) / p.name)  # im.jpg
+
             if len(det):
                 # Rescale boxes from img_size to im0 size
-                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], orgimg.shape).round()
+                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
 
-                det[:, 5:15] = scale_coords_landmarks(img.shape[2:], det[:, 5:15], orgimg.shape).round()
+                det[:, 5:15] = scale_coords_landmarks(img.shape[2:], det[:, 5:15], im0.shape).round()
 
                 for j in range(det.size()[0]):
                     xyxy = det[j, :4].view(-1).tolist()
@@ -168,30 +176,36 @@ def detect(
                     landmarks = det[j, 5:15].view(-1).tolist()
                     class_num = det[j, 15].cpu().numpy()
                     
-                    orgimg = show_results(orgimg, xyxy, conf, landmarks, class_num)
+                    im0 = show_results(im0, xyxy, conf, landmarks, class_num)
+            
+            if view_img:
+                cv2.imshow('result', im0)
+                k = cv2.waitKey(1)
                     
-        if save_img:
-            if dataset.mode == 'image':
-                cv2.imwrite(save_path, orgimg)
-            else:  # 'video' or 'stream'
-                if vid_path[i] != save_path:  # new video
-                    vid_path[i] = save_path
-                    if isinstance(vid_writer[i], cv2.VideoWriter):
-                        vid_writer[i].release()  # release previous video writer
-                    if vid_cap:  # video
-                        print(vid_cap, '\n\n\n')
-                        fps = vid_cap.get(cv2.CAP_PROP_FPS)
-                        w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                        h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                    else:  # stream
-                        fps, w, h = 30, orgimg.shape[1], orgimg.shape[0]
-                    save_path = str(Path(save_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
-                    vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
-                vid_writer[i].write(orgimg)
-                
-        if view_img:
-            cv2.imshow('result.jpg', orgimg)
-            k = cv2.waitKey(1)
+            # Save results (image with detections)
+            if save_img:
+                if dataset.mode == 'image':
+                    cv2.imwrite(save_path, im0)
+                else:  # 'video' or 'stream'
+                    if vid_path[i] != save_path:  # new video
+                        vid_path[i] = save_path
+                        if isinstance(vid_writer[i], cv2.VideoWriter):
+                            vid_writer[i].release()  # release previous video writer
+                        if vid_cap:  # video
+                            fps = vid_cap.get(cv2.CAP_PROP_FPS)
+                            w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                            h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                        else:  # stream
+                            fps, w, h = 30, im0.shape[1], im0.shape[0]
+                        save_path = str(Path(save_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
+                        vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
+                    try:
+                        vid_writer[i].write(im0)
+                    except Exception as e:
+                        print(e)
+
+                    
+            
 
 
 if __name__ == '__main__':

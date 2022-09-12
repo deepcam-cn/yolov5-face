@@ -202,8 +202,8 @@ if __name__ == '__main__':
     parser.add_argument('--project', default=ROOT / 'runs/detect', help='save results to project/name')
     parser.add_argument('--name', default='exp', help='save results to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
-    parser.add_argument('--save-img', action='store_true', help='existing project/name ok, do not increment')
-    parser.add_argument('--view-img', action='store_true', help='existing project/name ok, do not increment')
+    parser.add_argument('--save-img', action='store_true', help='save results')
+    parser.add_argument('--view-img', action='store_true', help='show results')
     opt = parser.parse_args()
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

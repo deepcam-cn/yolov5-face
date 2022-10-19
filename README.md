@@ -131,11 +131,15 @@ First row: RetinaFace, 2nd row: YOLOv5m-Face
 **YOLO5Face was used in the 3rd place standard face recogntion track of the [ICCV2021 Masked Face Recognition Challenge](https://www.face-benchmark.org/challenge.html).** 
 
 
+#### AXera demo
+
+https://github.com/AXERA-TECH/ax-samples/blob/main/examples/ax_yolov5s_face_steps.cc
+
 #### Android demo
 
 https://github.com/FeiGeChuanShu/ncnn_Android_face/tree/main/ncnn-android-yolov5_face
 
-#### opencv dnn demo
+#### OpenCV DNN demo
 
 https://github.com/hpc203/yolov5-face-landmarks-opencv-v2
 

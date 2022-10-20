@@ -1,6 +1,6 @@
 ## What's New
 
-**2022.10** yolov7face
+**2022.10** yolov7-face
 
 https://github.com/derronqi/yolov7-face
 

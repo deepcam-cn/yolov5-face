@@ -1,5 +1,9 @@
 ## What's New
 
+**2022.10** yolov7face
+
+https://github.com/derronqi/yolov7-face
+
 **2022.8**: yolov7
 
 | Method         | Easy  | Medium | Hard  | #Flops(G)      | Link  |

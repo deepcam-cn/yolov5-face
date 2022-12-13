@@ -6,10 +6,14 @@ https://github.com/derronqi/yolov7-face
 
 **2022.8**: yolov7
 
-| Method         | Easy  | Medium | Hard  | #Flops(G)      | Link  |
-| ---------------| ----- | ------ | ----- | -------------- | ----- |
-| yolov7-tiny    | 94.0  | 92.3   | 83.2  | 4.960          | -     |
-| yolov7         | -     | -      | -     | 36.946         | -     |
+| Method           |  Test Size | Easy  | Medium | Hard  | FLOPs (B) @640 |
+| -----------------| ---------- | ----- | ------ | ----- | -------------- | 
+| yolov7-lite-t    | 640        | 87.1  | 83.9   | 69.0  |  0.8           |
+| yolov7-lite-s    | 640        | 92.4  | 90.0   | 77.5  |  3.0           |
+| yolov7-tiny-leak | 640        | 93.2  | 91.3   | 83.0  |  16.6          | 
+| yolov7s          | 640        | 94.8  | 93.1   | 85.2  |  16.8          |
+| yolov7-w6        | 960        | 96.4  | 95.0   | 88.3  |  89.0          |
+| yolov7-w6+TTA    | 1280       | 96.9  | 95.8   | 90.4  |  89.0          | 
 
 
 **2021.12**: Yolov5-face to TensorRT. 

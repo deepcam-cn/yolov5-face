@@ -2,6 +2,10 @@ import torch
 import detect_face
 import numpy as np
 import cv2
+import serial
+from mcu_lab import My_serial
+from mcu_lab import my_control
+import mcu_lab.My_yolo as My_yolo
 
 
 class yoloFace:
@@ -53,16 +57,66 @@ class yoloFace:
         return img_rgb
 
 
+def open_serial(com='COM3', board=115200, timeout=0.01):
+    try:
+        # 设置串口参数
+        ser = serial.Serial(com, board, timeout=timeout)
+    except:  # 没有默认串口则用户选择
+        if not My_serial.list_available_ports():
+            print('please connect the fan board and try again')
+            raise My_serial.NoAvailablePortErrer(
+                'please connect the fan board and try again')
+
+        else:
+            ser = serial.Serial(
+                input('please select a com\n'), board, timeout=timeout)
+    finally:  # 打印串口信息
+        print("Connected to: " + ser.portstr)
+        return ser
+
+
 if __name__ == '__main__':
-    source = '0'#摄像头
-    img_size = (480, 640)
+    # mcu initial
+    # open serial
+    ser = open_serial()
+    # init control system
+    fanSystem = my_control.controlSystem()
     # 推理数据准备
+    source = '0'  # 摄像头
+    img_size = (480, 640)
     dataset = detect_face.LoadStreams(source, img_size)
     # 载入模型
     faceDetect = yoloFace()
     # 对数据流中的数据推理
     for path, img_np, im0s, vid_cap in dataset:
-        faceDetect.infer(img_np)
+        # record term time
+        fanSystem.timeLastTerm
+        fanSystem.term_start()
+        # 从串口读取数据
+        print('get a data:', My_serial.serial_recive(ser))
+        detectXYxy = faceDetect(img_np)[0][:, [0, 1, 2, 3, 4, 15]]
+        personDiraction = detectXYxy
+        personDiraction[:, [0, 1]] = (
+            detectXYxy[:, [0, 1]]+detectXYxy[:, [2, 3]])/2
+        personDiraction[:, [2, 3]] = detectXYxy[:,
+                                                [2, 3]]-detectXYxy[:, [0, 1]]
+        personDiraction[:, [0, 2]] /= img_size[1]
+        personDiraction[:, [1, 3]] /= img_size[0]
+        print('detect:\n', personDiraction)
         img_rgb = faceDetect.plot(img_np)
-        cv2.imshow('result', img_rgb)
-        k = cv2.waitKey(1)
+        try:
+            targetPerson = fanSystem.Filter(personDiraction)
+            # 在跟踪位置画点
+            My_yolo.drow_point(img_rgb, targetPerson[0:2], (0, 0, 255))
+            targSite = fanSystem.Controller(targetPerson)
+            # 在控制位置画点
+            My_yolo.drow_point(img_rgb, targSite)
+            My_serial.send_targPozition(ser, [1.0-targSite[0], targSite[1]])
+        except IndexError:
+            print('no person recognized')
+            pass
+        finally:
+            # 摄像头是和人对立的，将图像左右调换回来正常显示
+            cv2.imshow('result', cv2.flip(img_rgb, 1))
+            k = cv2.waitKey(1)
+        fanSystem.term_end()

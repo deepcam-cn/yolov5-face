@@ -2,3 +2,9 @@
 data/tmp/
 
 data/widerface
+best.onnx
+runs/train
+yolov5_face_dataset
+*__pycache__
+*.onnx
+*.pt

@@ -1,0 +1,36 @@
+引用citation：
+fork from:
+https://github.com/gb16001/yolov5-face/tree/feature_out-detect
+dataset:
+https://huggingface.co/datasets/wider_face
+annotation files:
+https://drive.google.com/file/d/1tU_IjyOwGQfGNUvZGwWWM4SwxKp2PUQ8/view
+
+本fork的部分修改
+修改widerface.yaml为widerface01.yaml
+indices.append((b, a, gj.clamp_(0, gain[3].long() - 1), gi.clamp_(0, gain[2].long() - 1))) 
+在/content/yolov5-face/utils/loss.py", line 248,
+yolov5_face_dataset文件夹中放入原始的wider face dataset和annotation files
+
+
+
+部分使用方法usage：
+将wider face dataset 转换成能扔进本脚本中训练的形式(Data preparation)
+python train2yolo.py /path/to/original/widerface/train [/path/to/save/widerface/train]
+python val2yolo.py  /path/to/original/widerface [/path/to/save/widerface/val]
+注：让images 与 lable.txt处于同一个文件夹下
+转化后的结果在
+yolov5-face\data\widerface 的train val中，一个图片对应一个标注文件
+
+train cmd:
+python train.py --data data/widerface01.yaml --cfg models/yolov5n.yaml --weights 'yolov5n.pt' --epochs 70
+in best.pt ,premodel:v5n,epoch=70,batch size=16,using 3.5h,envi: GPU:laptop4060 vram:8g CPU:12650H ram:16g ,os:win11.
+in training seems to be constrained by single cpu core performance
+
+detect cmd:
+ python detect_face.py --weights best.pt --view-img
+
+
+自己加入脚本：infer.py
+写了一个简易脚本，实时用摄像头检测，标注后输出。
+识别结果为pred变量，会将他输出返回

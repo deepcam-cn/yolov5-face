@@ -40,7 +40,7 @@ class yoloFace:
         pred = detect_face.non_max_suppression_face(
             pred, self.conf_thres, self.iou_thres)
         self.pred = pred
-        return pred
+        return pred# tensor list: bbox(xyxy),conf,landmark(5*2),class
 
     def plot(self, img_np):
         # Process detections

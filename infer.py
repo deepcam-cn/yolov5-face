@@ -86,7 +86,7 @@ if __name__ == '__main__':
     img_size = (480, 640)
     dataset = detect_face.LoadStreams(source, img_size)
     # 载入模型
-    faceDetect = yoloFace()
+    faceDetect = yoloFace(weight='weights/official_pretrained/yolov5n-face.pt')#'best.pt'
     # 对数据流中的数据推理
     for path, img_np, im0s, vid_cap in dataset:
         # record term time
@@ -117,6 +117,6 @@ if __name__ == '__main__':
             pass
         finally:
             # 摄像头是和人对立的，将图像左右调换回来正常显示
-            cv2.imshow('result', cv2.flip(img_rgb, 1))
+            cv2.imshow('result', img_rgb)#cv2.flip(img_rgb, 1)
             k = cv2.waitKey(1)
         fanSystem.term_end()

@@ -23,13 +23,16 @@ class my_Serial:
 
 
 def serial_recive(ser: serial.Serial):  # 串口接收数据
-    if ser.in_waiting > 0:
-        data = ser.read_all().decode()
-        if data:
-            return data
+    try:
+        if ser.in_waiting > 0:
+            data = ser.read_all().decode()
+            if data:
+                return data
+            else:
+                return None
         else:
             return None
-    else:
+    except UnicodeDecodeError:
         return None
     
 
@@ -45,7 +48,7 @@ def wait_recive_ser_responce(ser: serial.Serial):  # 等待读取串口回应
 
     while(not ser.in_waiting > 0):  # 等待回应
         sleep(0.01)
-        print('recive sleep once ')
+        # print('recive sleep once ')
         pass
     try:
         data = ser.read_all().decode()  # 打印回应
@@ -55,7 +58,7 @@ def wait_recive_ser_responce(ser: serial.Serial):  # 等待读取串口回应
             pass
         return data
     except UnicodeDecodeError:
-        print('UnicodeDecodeError from serial')
+        # print('UnicodeDecodeError from serial')
         return None
 
 

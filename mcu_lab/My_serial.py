@@ -98,8 +98,8 @@ ser = serial.Serial()
 
 
 def port_open_recv():  # 对串口的参数进行配置
-    ser.port = 'com9'
-    ser.baudrate = 9600
+    ser.port = 'com3'
+    ser.baudrate = 115200
     ser.bytesize = 8
     ser.stopbits = 1
     ser.parity = "N"  # 奇偶校验位
@@ -142,8 +142,12 @@ def list_available_ports():
 
 
 if __name__ == '__main__':
+    import concurrent.futures
+    # 创建 ThreadPoolExecutor 对象
+    executor = concurrent.futures.ThreadPoolExecutor()
     port_open_recv()
     while True:
         a = input("输入要发送的数据：")
-        send(a)
+        ret=executor.submit(send,a)
+        # send(a)
         sleep(0.5)  # 起到一个延时的效果，这里如果不加上一个while True，程序执行一次就自动跳出了

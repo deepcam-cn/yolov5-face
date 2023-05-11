@@ -73,7 +73,7 @@ class controlSystem(watch):
     def Controller(self, targMan: torch.Tensor):  # 控制器,一阶惯性
         #惯性系数
         m=1.0
-        if False:#self._T>m
+        if self._T>m:#
             self.targPos=targMan[0:2]
         else:
             d_pos=targMan[0:2]-self.targPos

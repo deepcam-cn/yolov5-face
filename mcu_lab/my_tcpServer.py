@@ -1,8 +1,11 @@
+import io
+import threading
 import socket
 import concurrent.futures
-
-HOST = '127.0.0.1'  # 服务器IP地址
+from time import sleep
+HOST = '192.168.137.1'  # 服务器IP地址
 PORT = 8888        # 服务器端口号
+
 
 def single_server():
 
@@ -24,17 +27,17 @@ def single_server():
                 break
             # 处理接收到的数据
             print(f'收到客户端消息：{data.decode()}')
-            
+
         # 关闭连接
         conn.close()
+
 
 '''
 以下为多线程例子from chatgpt
 '''
-import socket
-import threading
 
-def handle_client(conn, addr):
+
+def handle_client(conn: socket.socket, addr):
     print(f"[NEW CONNECTION] {addr} connected.")
 
     connected = True
@@ -45,7 +48,7 @@ def handle_client(conn, addr):
             if message:
                 print(f"[{addr}] {message.decode()}")
                 # 发送消息给客户端
-                conn.send("Message received".encode())
+                conn.send("OK".encode())
             else:
                 connected = False
         except ConnectionResetError:
@@ -53,15 +56,12 @@ def handle_client(conn, addr):
             break
         except TimeoutError:
             print('time out')
-            
-
 
     # 关闭连接
     conn.close()
 
+
 def start_server():
-    # 创建 ThreadPoolExecutor 对象
-    executor = concurrent.futures.ThreadPoolExecutor()
 
     # 创建TCP服务器
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -79,14 +79,111 @@ def start_server():
         conn, addr = server.accept()
 
         # 创建一个新线程来处理客户端的请求
-        future = executor.submit(handle_client,conn,addr)
-   
-        
+        future = executor.submit(handle_client, conn, addr)
+
         # client_thread = threading.Thread(target=handle_client, args=(conn, addr))
         # client_thread.start()
 
         # 打印当前连接的客户端数量
         print(f"[ACTIVE CONNECTIONS] {executor._work_queue.qsize()}")
 
+
+# 创建io stream class
+
+
+class MyStream(io.IOBase):
+    def __init__(self):
+        self.buffer = bytearray()
+
+    def write(self, b):
+        self.buffer.extend(b)
+
+    def read(self, n=None):
+        if n is None:
+            result = self.buffer
+            self.buffer = bytearray()
+        else:
+            result = self.buffer[:n]
+            self.buffer = self.buffer[n:]
+        return result
+
+
+class oneTCPserver(io.IOBase):
+    def __init__(self, HOST=HOST, PORT=PORT) -> None:
+        # 创建TCP服务器
+        self._start_server(HOST, PORT)
+        self.buffer = bytearray()
+        self.__runnning=True
+        pass
+    def __del__(self) -> None:
+        self.__runnning=False
+        del self.buffer
+        return super().__del__()
+    def _start_server(self, HOST, PORT):
+        self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # 绑定IP地址和端口号
+        self._server.bind((HOST, PORT))
+        # 开始监听
+        self._server.listen()
+        # print("[LISTENING] Server is listening on localhost")
+        return None
+
+    def _get_client(self):
+        self.conn, self.addr = self._server.accept()
+        return self.conn, self.addr
+
+    def loop(self):
+        while(self.__runnning):
+            self._get_client()
+            print(f"[NEW CONNECTION] {self.addr} connected.")
+            connected = True
+            while connected:
+                # 接收客户端发送的消息
+                try:
+                    message = self.conn.recv(1024)
+                    if message:
+                        # print(f"[{self.addr}] {message.decode()}")
+                        # 发送消息给客户端
+                        self.buffer.extend(message)
+                        # self.conn.send("OK\n".encode())
+                    else:
+                        connected = False
+                except ConnectionResetError:
+                    print('lose connection')
+                    break
+                except TimeoutError:
+                    print('time out')
+            # 关闭连接
+            self.conn.close()
+        return None
+
+    def write(self, message: bytes):
+        try:
+            return self.conn.send(message,1)
+        except OSError:
+            print('tcp os err')
+            return -1
+
+    def read(self, n=None):
+        if n is None:
+            result = self.buffer
+            self.buffer = bytearray()
+        else:
+            result = self.buffer[:n]
+            self.buffer = self.buffer[n:]
+        return result
+
+
 if __name__ == '__main__':
-    start_server()
+    buff = MyStream()
+    # 创建 ThreadPoolExecutor 对象
+    executor = concurrent.futures.ThreadPoolExecutor()
+    my_TCP = oneTCPserver()
+
+    executor.submit(my_TCP.loop)
+
+    while True:
+        print(my_TCP.read().decode(),end='')
+        my_TCP.write('fuck you\n'.encode())
+
+        sleep(1)

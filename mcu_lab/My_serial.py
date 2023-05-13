@@ -67,15 +67,17 @@ def send_targPozition(ser: serial.Serial, targDiraction):  # 指引云台转向
     try:
         # 发送横纵坐标
         wait_untill_ser_writable(ser)
-        ser.write(('n {x_deraction:d}\n'.format(
-            x_deraction=int(targDiraction[0]*180))).encode())
-        ser.write(('m {y_deraction:d}\n'.format(
-            y_deraction=int(targDiraction[1]*100))).encode())
+        x_cmd=('n {x_deraction:d}\n'.format(
+            x_deraction=int(targDiraction[0]*180))).encode()
+        y_cmd=('m {y_deraction:d}\n'.format(
+            y_deraction=int(targDiraction[1]*100))).encode()
+        ser.write(x_cmd)
+        ser.write(y_cmd)
         wait_recive_ser_responce(ser)
     except IndexError:
 
         pass
-    return
+    return x_cmd+y_cmd
 
 
 '''待填充的serial功能

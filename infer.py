@@ -6,7 +6,9 @@ import cv2
 import serial
 from mcu_lab import My_serial
 from mcu_lab import my_control
+from mcu_lab import my_tcpServer
 import mcu_lab.My_yolo as My_yolo
+import threading
 
 
 class yoloFace:
@@ -77,11 +79,7 @@ def open_serial(com='COM3', board=115200, timeout=0.01):
             return ser
 
 
-'''
-    图像识别
-'''
-
-
+# 图像识别
 def obj_detect():
 
     detectXYxy = faceDetect(img_np)[0][:, [0, 1, 2, 3, 4, 15]]
@@ -95,6 +93,8 @@ def obj_detect():
     print('detect:\n', personDiraction)
     return personDiraction
 
+# 结果展示和控制坐标发送
+
 
 def img_draw_ser_send():
     try:
@@ -103,10 +103,14 @@ def img_draw_ser_send():
         targSite = fanSystem.Controller(targetPerson)
         ser_send_future = executor.submit(My_serial.send_targPozition, ser, [
             1.0-targSite[0], targSite[1]])
+        
         # 在跟踪位置画点
         My_yolo.drow_point(img_rgb, targetPerson[0:2], (0, 0, 255))
         # 在控制位置画点
         My_yolo.drow_point(img_rgb, targSite)
+        poz_cmd=ser_send_future.result()
+        my_TCP.write(poz_cmd)
+        print(f'send tcp :{poz_cmd}')
 
     # My_serial.send_targPozition(ser, [1.0-targSite[0], targSite[1]])
     except IndexError:
@@ -123,6 +127,9 @@ if __name__ == '__main__':
     # mcu initial
     # 创建 ThreadPoolExecutor 对象
     executor = concurrent.futures.ThreadPoolExecutor()
+    # 建立TCP连接
+    my_TCP = my_tcpServer. oneTCPserver()
+    executor.submit(my_TCP.loop)
     # open serial
     ser = open_serial()
     # init control system
@@ -135,7 +142,7 @@ if __name__ == '__main__':
     faceDetect = yoloFace(
         weight='weights/official_pretrained/yolov5n-0.5.pt')  # 'best.pt'
     # 对数据流中的数据推理
-    for path, img_np, im0s, vid_cap in dataset:
+    for path, img_np, im0s, vid_cap in dataset:#dataset是一个迭代器
         # record term time
         fanSystem.timeLastTerm
         fanSystem.term_start()
@@ -147,9 +154,8 @@ if __name__ == '__main__':
         except NameError:
             pass
         print('get a data:', My_serial.serial_recive(ser))
-        '''
-        show img and send control command,run by thread pool
-        '''
+        # show img and send control command,run by thread pool
         show_future = executor.submit(img_draw_ser_send)
         show_future.priority = -1
+        # timer stop
         fanSystem.term_end()

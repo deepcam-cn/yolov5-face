@@ -82,6 +82,12 @@ class controlSystem(watch):
         return self.targPos
     pass
 
+def pozition_2cmd(targDiraction):
+    x_cmd=('n {x_deraction:d}\n'.format(
+            x_deraction=int(targDiraction[0]*180))).encode()
+    y_cmd=('m {y_deraction:d}\n'.format(
+        y_deraction=int(targDiraction[1]*100))).encode()
+    return x_cmd+y_cmd
 # import torch
 # valueMat=torch.tensor([[1, 1, 0.5]])
 # valueVect = torch.sum(valueMat**2, dim=1)

@@ -69,8 +69,8 @@ def open_serial(com='COM3', board=115200, timeout=0.01):
     except:  # 没有默认串口则用户选择
         if not My_serial.list_available_ports():
             print('please connect the fan board and try again')
-            raise My_serial.NoAvailablePortErrer(
-                'please connect the fan board and try again')
+            # raise My_serial.NoAvailablePortErrer(
+            #     'please connect the fan board and try again')
             return None
         else:
             ser = serial.Serial(
@@ -101,16 +101,20 @@ def img_draw_ser_send():
         img_rgb = faceDetect.plot(img_np)
         targetPerson = fanSystem.Filter(personDiraction)
         targSite = fanSystem.Controller(targetPerson)
-        ser_send_future = executor.submit(My_serial.send_targPozition, ser, [
+        poz_cmd=my_control.pozition_2cmd([
             1.0-targSite[0], targSite[1]])
-        
+        if ser_send:
+            ser_send_future = executor.submit(My_serial.send_targPozition, ser,poz_cmd)
+            pass
+        if Tcp_send:
+            my_TCP.write(poz_cmd)
+            print(f'send tcp :{poz_cmd}')
         # 在跟踪位置画点
         My_yolo.drow_point(img_rgb, targetPerson[0:2], (0, 0, 255))
         # 在控制位置画点
         My_yolo.drow_point(img_rgb, targSite)
-        poz_cmd=ser_send_future.result()
-        my_TCP.write(poz_cmd)
-        print(f'send tcp :{poz_cmd}')
+        
+        
 
     # My_serial.send_targPozition(ser, [1.0-targSite[0], targSite[1]])
     except IndexError:
@@ -124,14 +128,19 @@ def img_draw_ser_send():
 
 
 if __name__ == '__main__':
+    # 标志位
+    ser_send = False
+    Tcp_send = True
+
     # mcu initial
     # 创建 ThreadPoolExecutor 对象
     executor = concurrent.futures.ThreadPoolExecutor()
-    # 建立TCP连接
-    my_TCP = my_tcpServer. oneTCPserver()
-    executor.submit(my_TCP.loop)
+    if Tcp_send:
+        # 建立TCP连接
+        my_TCP = my_tcpServer. oneTCPserver()
+        executor.submit(my_TCP.loop)
     # open serial
-    ser = open_serial()
+    ser = open_serial() if ser_send else None
     # init control system
     fanSystem = my_control.controlSystem()
     # 推理数据准备
@@ -142,7 +151,7 @@ if __name__ == '__main__':
     faceDetect = yoloFace(
         weight='weights/official_pretrained/yolov5n-0.5.pt')  # 'best.pt'
     # 对数据流中的数据推理
-    for path, img_np, im0s, vid_cap in dataset:#dataset是一个迭代器
+    for path, img_np, im0s, vid_cap in dataset:  # dataset是一个迭代器
         # record term time
         fanSystem.timeLastTerm
         fanSystem.term_start()
@@ -153,7 +162,8 @@ if __name__ == '__main__':
             show_future.result()  # 等待上轮显示、发送完毕
         except NameError:
             pass
-        print('get a data:', My_serial.serial_recive(ser))
+        if ser_send:
+            print('get a data:', My_serial.serial_recive(ser))
         # show img and send control command,run by thread pool
         show_future = executor.submit(img_draw_ser_send)
         show_future.priority = -1

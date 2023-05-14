@@ -124,7 +124,10 @@ def img_draw_ser_send():
         # 摄像头是和人对立的，将图像左右调换回来正常显示
         cv2.imshow('result', img_rgb)  # cv2.flip(img_rgb, 1)
         k = cv2.waitKey(1)
-    return ser_send_future.result()
+    if ser_send:
+        return ser_send_future.result()
+    else:
+        return None
 
 
 if __name__ == '__main__':

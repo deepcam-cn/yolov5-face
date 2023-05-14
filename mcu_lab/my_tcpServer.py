@@ -136,8 +136,9 @@ class oneTCPserver(io.IOBase):
         while(self.__runnning):
             self._get_client()
             print(f"[NEW CONNECTION] {self.addr} connected.")
-            connected = True
-            while connected:
+            self.conn.setsockopt(socket.IPPROTO_TCP,socket.TCP_NODELAY,1)
+            self.connected = True
+            while self.connected:
                 # 接收客户端发送的消息
                 try:
                     message = self.conn.recv(1024)
@@ -146,8 +147,8 @@ class oneTCPserver(io.IOBase):
                         # 发送消息给客户端
                         self.buffer.extend(message)
                         # self.conn.send("OK\n".encode())
-                    else:
-                        connected = False
+                    # else:
+                        # connected = False
                 except ConnectionResetError:
                     print('lose connection')
                     break
@@ -159,9 +160,13 @@ class oneTCPserver(io.IOBase):
 
     def write(self, message: bytes):
         try:
-            return self.conn.send(message,1)
+            return self.conn.sendall(message,socket.TCP_NODELAY)
         except OSError:
+            self.connected = False
             print('tcp os err')
+            return -1
+        except AttributeError:
+            print('tcp has not connect')
             return -1
 
     def read(self, n=None):

@@ -13,7 +13,7 @@ class stopWatch:
     @property
     def passTime(self):
         elapsed_time = self.stop_time - self.start_time
-        print("执行时间:", elapsed_time, "秒")
+        print(f"执行时间:{elapsed_time:8.4f}秒")
         return elapsed_time
     def refrash(self):
         self.start_time=0

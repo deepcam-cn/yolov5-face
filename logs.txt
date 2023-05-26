@@ -12,8 +12,6 @@ indices.append((b, a, gj.clamp_(0, gain[3].long() - 1), gi.clamp_(0, gain[2].lon
 在/content/yolov5-face/utils/loss.py", line 248,
 yolov5_face_dataset文件夹中放入原始的wider face dataset和annotation files
 
-
-
 部分使用方法usage：
 将wider face dataset 转换成能扔进本脚本中训练的形式(Data preparation)
 python train2yolo.py /path/to/original/widerface/train [/path/to/save/widerface/train]
@@ -33,7 +31,6 @@ detect cmd:
 export cmd:
 python export.py --weights best.pt --dynamic --onnx_infer
 将训练出的pt模型转化为onnx模型或其他模式
-
 
 自己加入脚本：infer.py
 写了一个简易脚本，实时用摄像头检测，标注后输出。

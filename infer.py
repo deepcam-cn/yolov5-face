@@ -90,7 +90,7 @@ def obj_detect():
                                             [2, 3]]-detectXYxy[:, [0, 1]]
     personDiraction[:, [0, 2]] /= img_size[1]
     personDiraction[:, [1, 3]] /= img_size[0]
-    print('detect:\n', personDiraction)
+    # print('detect:\n', personDiraction)
     return personDiraction
 
 # 结果展示和控制坐标发送
@@ -131,9 +131,11 @@ def img_draw_ser_send():
 
 
 if __name__ == '__main__':
-    # 标志位
+    # 标志位 flages of how to send tracing point
     ser_send = False
     Tcp_send = True
+    #权重文件位置 
+    model_dir='best.pt'# or 'weights/official_pretrained/yolov5n-0.5.pt'
 
     # mcu initial
     # 创建 ThreadPoolExecutor 对象
@@ -152,7 +154,7 @@ if __name__ == '__main__':
     dataset = detect_face.LoadStreams(source, img_size)
     # 载入模型
     faceDetect = yoloFace(
-        weight='weights/official_pretrained/yolov5n-0.5.pt')  # 'best.pt'
+        weight=model_dir)  
     # 对数据流中的数据推理
     for path, img_np, im0s, vid_cap in dataset:  # dataset是一个迭代器
         # record term time

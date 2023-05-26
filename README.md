@@ -1,187 +1,40 @@
-## What's New
+## 人脸追踪智能风扇
+这是一个人脸追踪风扇的PC控制部分。实现了人脸识别并追踪。
 
-**2023.04** [yolov8-face](https://github.com/derronqi/yolov8-face) (🔥🔥🔥↑) 
+## 用法
+下载模型权重文件后
 
-**2022.10** [yolov7-face](https://github.com/derronqi/yolov7-face) (🔥🔥🔥↑)
+model_dir='best.pt'
+标明权重文件位置
 
+ser_send = False
+Tcp_send = True
+选择控制命令传送方式（双false关闭控制功能）
 
-**2022.8**: yolov7
+运行infer.py脚本，会将识别结果和追踪点标出。
 
-| Method           |  Test Size | Easy  | Medium | Hard  | FLOPs (B) @640 | 
-| -----------------| ---------- | ----- | ------ | ----- | -------------- | 
-| yolov7-lite-t    | 640        | 88.7  | 85.2   | 71.5  |  0.8           |
-| yolov7-lite-s    | 640        | 92.7  | 89.9   | 78.5  |  3.0           | 
-| yolov7-tiny      | 640        | 94.7  | 92.6   | 82.1  |  13.2          | 
-| yolov7s          | 640        | 94.8  | 93.1   | 85.2  |  16.8          | 
-| yolov7           | 640        | 96.9  | 95.5   | 88.0  |  103.4         | 
-| yolov7+TTA       | 640        | 97.2  | 95.8   | 87.7  |  103.4         | 
+## 本fork工作
+PC控制器脚本：infer.py
 
+此脚本实现实时图像采集、目标识别、基于识别结果计算控制变量、将控制目标展示与传输给风扇执行。
+前两大功能基于原有脚本detect_face.py修改而来。后两个大功能基于mcu_lab中的多个库实现。包括控制算法my_control.py、TCP和串口通信方式的实现My_serial.py，my_tcpServer.py、离散控制所需要的计时功能stopWatch.py。
 
-**2021.12**: Yolov5-face to TensorRT. 
+其中my_control.py中定义的两个滤波器使得对目标的追踪可以十分稳定。
 
-|   Backbone   | Pytorch(ms) | TensorRT_FP16(ms) |
-| :----------: | :---------: | :---------------: |
-| yolov5n-0.5  |     7.7     |        2.1        |
-| yolov5n-face |     7.7     |        2.4        |
-| yolov5s-face |     5.6     |        2.2        |
-| yolov5m-face |     9.9     |        3.3        |
-| yolov5l-face |    15.9     |        4.5        |
+注：使用onnx模型推理需要onnxruntime python库
 
-> Pytorch=1.10.0+cu102    TensorRT=8.2.0.6   Hardware=rtx2080ti
+风扇执行器系统设计：
+https://github.com/gb16001/STM32_Pan-tilt_fan
 
-**2021.11**: BlazeFace
 
-| Method               | multi scale | Easy  | Medium | Hard  | Model Size(MB) | Link  |
-| -------------------- | ----------- | ----- | ------ | ----- | -------------- | ----- |
-| BlazeFace            | Ture        | 88.5  | 85.5   | 73.1  | 0.472          | https://github.com/PaddlePaddle/PaddleDetection |
-| BlazeFace-FPN-SSH    | Ture        | 90.7  | 88.3   | 79.3  | 0.479          | https://github.com/PaddlePaddle/PaddleDetection |
-| yolov5-blazeface     | True        | 90.4  | 88.7   | 78.0  | 0.493          | https://pan.baidu.com/s/1RHp8wa615OuDVhsO-qrMpQ pwd:r3v3 https://drive.google.com/file/d/1adi6ke2vCLQFcpbvFqWo_J4wZIfPqSMG|
-| yolov5-blazeface-fpn | True        | 90.8  | 89.4   | 79.1  | 0.493          |  -    |
+## 参考：
+fork from:
+[yolov5face](https://github.com/gb16001/yolov5-face/tree/feature_out-detect)
 
+dataset:[wider face](https://huggingface.co/datasets/wider_face)
 
-**2021.08**: Add new training dataset [Multi-Task-Facial](https://drive.google.com/file/d/1Pwd6ga06cDjeOX20RSC1KWiT888Q9IpM/view?usp=sharing),improve large face detection.
-| Method               | Easy  | Medium | Hard  | 
-| -------------------- | ----- | ------ | ----- |
-| ***YOLOv5s***        | 94.56 | 92.92  | 83.84 |
-| ***YOLOv5m***        | 95.46 | 93.87  | 85.54 |
+annotation files:
+[Jiankang Deng, Jia Guo, Yuxiang Zhou, Jinke Yu, Irene Kotsia, Stefanos Zafeiriou. Retinaface: Single-stage dense face localisation in the wild.[J]. arXiv preprint,arXiv:1905.00641,2019. ](https://drive.google.com/file/d/1tU_IjyOwGQfGNUvZGwWWM4SwxKp2PUQ8/view)
 
 
-## Introduction
-
-Yolov5-face is a real-time,high accuracy face detection.
-
-![](data/images/yolov5-face-p6.png)
-
-## Performance
-
-Single Scale Inference on VGA resolution（max side is equal to 640 and scale).
-
-***Large family***
-
-| Method              | Backbone       | Easy  | Medium | Hard  | \#Params(M) | \#Flops(G) |
-| :------------------ | -------------- | ----- | ------ | ----- | ----------- | ---------- |
-| DSFD (CVPR19)       | ResNet152      | 94.29 | 91.47  | 71.39 | 120.06      | 259.55     |
-| RetinaFace (CVPR20) | ResNet50       | 94.92 | 91.90  | 64.17 | 29.50       | 37.59      |
-| HAMBox (CVPR20)     | ResNet50       | 95.27 | 93.76  | 76.75 | 30.24       | 43.28      |
-| TinaFace (Arxiv20)  | ResNet50       | 95.61 | 94.25  | 81.43 | 37.98       | 172.95     |
-| SCRFD-34GF(Arxiv21) | Bottleneck Res | 96.06 | 94.92  | 85.29 | 9.80        | 34.13      |
-| SCRFD-10GF(Arxiv21) | Basic Res      | 95.16 | 93.87  | 83.05 | 3.86        | 9.98       |
-| -                   | -              | -     | -      | -     | -           | -          |
-| ***YOLOv5s***       | CSPNet         | 94.67 | 92.75  | 83.03 | 7.075       | 5.751      |
-| **YOLOv5s6**        | CSPNet         | 95.48 | 93.66  | 82.8  | 12.386      | 6.280      |
-| ***YOLOv5m***       | CSPNet         | 95.30 | 93.76  | 85.28 | 21.063      | 18.146     |
-| **YOLOv5m6**        | CSPNet         | 95.66 | 94.1   | 85.2  | 35.485      | 19.773     |
-| ***YOLOv5l***       | CSPNet         | 95.78 | 94.30  | 86.13 | 46.627      | 41.607     |
-| ***YOLOv5l6***      | CSPNet         | 96.38 | 94.90  | 85.88 | 76.674      | 45.279     |
-
-
-***Small family***
-
-| Method               | Backbone        | Easy  | Medium | Hard  | \#Params(M) | \#Flops(G) |
-| -------------------- | --------------- | ----- | ------ | ----- | ----------- | ---------- |
-| RetinaFace (CVPR20   | MobileNet0.25   | 87.78 | 81.16  | 47.32 | 0.44        | 0.802      |
-| FaceBoxes (IJCB17)   |                 | 76.17 | 57.17  | 24.18 | 1.01        | 0.275      |
-| SCRFD-0.5GF(Arxiv21) | Depth-wise Conv | 90.57 | 88.12  | 68.51 | 0.57        | 0.508      |
-| SCRFD-2.5GF(Arxiv21) | Basic Res       | 93.78 | 92.16  | 77.87 | 0.67        | 2.53       |
-| -                    | -               | -     | -      | -     | -           | -          |
-| ***YOLOv5n***        | ShuffleNetv2    | 93.74 | 91.54  | 80.32 | 1.726       | 2.111      |
-| ***YOLOv5n-0.5***    | ShuffleNetv2    | 90.76 | 88.12  | 73.82 | 0.447       | 0.571      |
-
-
-
-## Pretrained-Models
-
-| Name        | Easy  | Medium | Hard  | FLOPs(G) | Params(M) | Link                                                         |
-| ----------- | ----- | ------ | ----- | -------- | --------- | ------------------------------------------------------------ |
-| yolov5n-0.5 | 90.76 | 88.12  | 73.82 | 0.571    | 0.447     | Link: https://pan.baidu.com/s/1UgiKwzFq5NXI2y-Zui1kiA  pwd: s5ow, https://drive.google.com/file/d/1XJ8w55Y9Po7Y5WP4X1Kg1a77ok2tL_KY/view?usp=sharing |
-| yolov5n     | 93.61 | 91.52  | 80.53 | 2.111    | 1.726     | Link: https://pan.baidu.com/s/1xsYns6cyB84aPDgXB7sNDQ  pwd: lw9j,https://drive.google.com/file/d/18oenL6tjFkdR1f5IgpYeQfDFqU4w3jEr/view?usp=sharing |
-| yolov5s     | 94.33 | 92.61  | 83.15 | 5.751    | 7.075     | Link: https://pan.baidu.com/s/1fyzLxZYx7Ja1_PCIWRhxbw  Link: eq0q,https://drive.google.com/file/d/1zxaHeLDyID9YU4-hqK7KNepXIwbTkRIO/view?usp=sharing |
-| yolov5m     | 95.30 | 93.76  | 85.28 | 18.146   | 21.063    | Link: https://pan.baidu.com/s/1oePvd2K6R4-gT0g7EERmdQ  pwd: jmtk, https://drive.google.com/file/d/1Sx-KEGXSxvPMS35JhzQKeRBiqC98VDDI |
-| yolov5l     | 95.78 | 94.30  | 86.13 | 41.607   | 46.627    | Link: https://pan.baidu.com/s/11l4qSEgA2-c7e8lpRt8iFw  pwd: 0mq7, https://drive.google.com/file/d/16F-3AjdQBn9p3nMhStUxfDNAE_1bOF_r |
-
-## Data preparation
-
-1. Download WIDERFace datasets.
-2. Download annotation files from [google drive](https://drive.google.com/file/d/1tU_IjyOwGQfGNUvZGwWWM4SwxKp2PUQ8/view?usp=sharing).
-
-```shell
-cd data
-python3 train2yolo.py /path/to/original/widerface/train [/path/to/save/widerface/train]
-python3 val2yolo.py  /path/to/original/widerface [/path/to/save/widerface/val]
-```
-
-
-
-## Training
-
-```shell
-CUDA_VISIBLE_DEVICES="0,1,2,3" python3 train.py --data data/widerface.yaml --cfg models/yolov5s.yaml --weights 'pretrained models'
-```
-
-
-
-## WIDERFace Evaluation
-
-```shell
-python3 test_widerface.py --weights 'your test model' --img-size 640
-
-cd widerface_evaluate
-python3 evaluation.py
-```
-
-#### Test
-
-![](data/images/result.jpg)
-
-#### Landmark Visulization 
-
-![](data/images/landmark.png)
-First row: RetinaFace, 2nd row: YOLOv5m-Face 
-**YOLO5Face was used in the 3rd place standard face recogntion track of the [ICCV2021 Masked Face Recognition Challenge](https://www.face-benchmark.org/challenge.html).** 
-
-
-#### AXera demo
-
-https://github.com/AXERA-TECH/ax-samples/blob/main/examples/ax_yolov5s_face_steps.cc
-
-#### Android demo
-
-https://github.com/FeiGeChuanShu/ncnn_Android_face/tree/main/ncnn-android-yolov5_face
-
-#### OpenCV DNN demo
-
-https://github.com/hpc203/yolov5-face-landmarks-opencv-v2
-
-#### ONNXRuntime/MNN/TNN/NCNN C++ demo
-
-https://github.com/DefTruth/lite.ai.toolkit/blob/main/lite/ort/cv/yolo5face.cpp
-
-https://github.com/DefTruth/lite.ai.toolkit/blob/main/lite/mnn/cv/mnn_yolo5face.cpp
-
-https://github.com/DefTruth/lite.ai.toolkit/blob/main/lite/tnn/cv/tnn_yolo5face.cpp
-
-https://github.com/DefTruth/lite.ai.toolkit/blob/main/lite/ncnn/cv/ncnn_yolo5face.cpp
-
-#### References
-
-https://github.com/ultralytics/yolov5
-
-https://github.com/DayBreak-u/yolo-face-with-landmark
-
-https://github.com/xialuxi/yolov5_face_landmark
-
-https://github.com/biubug6/Pytorch_Retinaface
-
-https://github.com/deepinsight/insightface
-
-
-#### Citation 
-- If you think this work is useful for you, please cite 
-
-      @article{YOLO5Face,
-      title = {YOLO5Face: Why Reinventing a Face Detector},
-      author = {Delong Qi and Weijun Tan and Qi Yao and Jingfeng Liu},
-      booktitle = {ArXiv preprint ArXiv:2105.12931},
-      year = {2021}
-      }
 

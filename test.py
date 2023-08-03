@@ -154,7 +154,7 @@ def test(data,
                              "class_id": int(cls),
                              "box_caption": "%s %.3f" % (names[cls], conf),
                              "scores": {"class_score": conf},
-                             "domain": "pixel"} for *xyxy, conf, cls in pred.tolist()]
+                             "domain": "pixel"} for *xyxy, conf, cls in predn.tolist()]
                 boxes = {"predictions": {"box_data": box_data, "class_labels": names}}  # inference-space
                 wandb_images.append(wandb.Image(img[si], boxes=boxes, caption=path.name))
 
@@ -164,14 +164,14 @@ def test(data,
                 image_id = int(path.stem) if path.stem.isnumeric() else path.stem
                 box = xyxy2xywh(predn[:, :4])  # xywh
                 box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
-                for p, b in zip(pred.tolist(), box.tolist()):
+                for p, b in zip(predn.tolist(), box.tolist()):
                     jdict.append({'image_id': image_id,
                                   'category_id': coco91class[int(p[15])] if is_coco else int(p[15]),
                                   'bbox': [round(x, 3) for x in b],
                                   'score': round(p[4], 5)})
 
             # Assign all predictions as incorrect
-            correct = torch.zeros(pred.shape[0], niou, dtype=torch.bool, device=device)
+            correct = torch.zeros(predn.shape[0], niou, dtype=torch.bool, device=device)
             if nl:
                 detected = []  # target indices
                 tcls_tensor = labels[:, 0]
@@ -180,7 +180,7 @@ def test(data,
                 tbox = xywh2xyxy(labels[:, 1:5])
                 scale_coords(img[si].shape[1:], tbox, shapes[si][0], shapes[si][1])  # native-space labels
                 if plots:
-                    confusion_matrix.process_batch(pred, torch.cat((labels[:, 0:1], tbox), 1))
+                    confusion_matrix.process_batch(predn, torch.cat((labels[:, 0:1], tbox), 1))
 
                 # Per target class
                 for cls in torch.unique(tcls_tensor):
